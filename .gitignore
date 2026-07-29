@@ -1,0 +1,79 @@
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv/
+venv/
+env/
+*.pyc
+
+# ─── YOLO / ML Training ───────────────────────────────────────────────────────
+# Pretrained base weights (large, download separately)
+yolov8n.pt
+yolo11n.pt
+
+# Training run artifacts (checkpoints, plots, confusion matrices)
+runs/
+
+# ─── Datasets ─────────────────────────────────────────────────────────────────
+# Raw downloaded datasets (too large for git – use Git LFS or external storage)
+datasets/raw/
+datasets/merged/
+datasets/cleaned/
+datasets/negatives/
+datasets/hard_negatives/
+datasets/.backups/
+
+# Keep the split structure and YAML config, ignore image/label files
+datasets/train/images/
+datasets/train/labels/
+datasets/valid/images/
+datasets/valid/labels/
+datasets/test/images/
+datasets/test/labels/
+
+# ─── Models ───────────────────────────────────────────────────────────────────
+# Keep models/ folder tracked but ignore large .pt files > a few MB
+# (commit best.pt only if it is your own trained model and small enough)
+# Uncomment the next line to ignore all model weights:
+# models/*.pt
+
+# ─── Uploads & Outputs ────────────────────────────────────────────────────────
+backend/app/uploads/
+output_images/
+input_images/
+videoframes/
+results/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Frontend build artifacts ─────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Pytest ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.bak

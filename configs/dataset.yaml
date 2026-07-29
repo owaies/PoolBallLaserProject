@@ -1,0 +1,23 @@
+path: datasets
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 16
+names:
+  0: cue_ball
+  1: 1_ball
+  2: 2_ball
+  3: 3_ball
+  4: 4_ball
+  5: 5_ball
+  6: 6_ball
+  7: 7_ball
+  8: 8_ball
+  9: 9_ball
+  10: 10_ball
+  11: 11_ball
+  12: 12_ball
+  13: 13_ball
+  14: 14_ball
+  15: 15_ball
