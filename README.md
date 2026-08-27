@@ -7,6 +7,14 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 
 ---
 
+## Daily Progress Log
+
+### 2026-08-27
+- Reviewed and documented the current Phase 6 coordinate-mapping milestone.
+- Confirmed the README reflects the current project architecture and remaining hardware-integration work.
+
+---
+
 ## Folder Structure
 
 ```
