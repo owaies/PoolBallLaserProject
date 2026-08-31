@@ -25,6 +25,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Reviewed the README progress history and kept the documented project status consistent with the existing Phase 6 software milestone.
 - Continued to distinguish completed coordinate-mapping work from the planned ESP32 and servo hardware integration.
 
+### 2026-08-31
+- Updated the daily documentation log while keeping the project status aligned with the existing Phase 6 coordinate-mapping milestone.
+- Kept ESP32 and servo hardware integration documented as future work until it is actually implemented.
+
 ---
 
 ## Folder Structure
@@ -36,8 +40,7 @@ PoolBallLaserProject/
 │   ├── camera_matrix/    # Saved intrinsic arrays (camera_matrix.npy, dist_coeffs.npy)
 │   ├── docs/             # Calibration reports
 │   ├── images/           # Raw checkerboard images for calibration
-│   ├── results/          # Undistortion validation outputs
-│   └── scripts/          # Calibration logic (capture, calibrate, mock generator)
+│   └── scripts/           # Calibration logic (capture, calibrate, mock generator)
 │
 ├── configs/              # Phase 3: Project configurations
 │   ├── dataset.yaml      # YOLO dataset definitions
