@@ -29,6 +29,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Updated the daily documentation log while keeping the project status aligned with the existing Phase 6 coordinate-mapping milestone.
 - Kept ESP32 and servo hardware integration documented as future work until it is actually implemented.
 
+### 2026-09-01
+- Reviewed the documented Phase 6 workflow and kept the README aligned with the repository's current software milestone.
+- Continued documenting hardware integration as future work rather than claiming unimplemented ESP32 or servo functionality.
+
 ---
 
 ## Folder Structure
