@@ -61,6 +61,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Reviewed the current README and confirmed that Phase 6 coordinate mapping remains the latest documented software milestone.
 - Kept the progress log accurate by leaving ESP32 and servo integration as future work.
 
+### 2026-09-09
+- Reviewed the existing Phase 6 documentation and kept the daily log aligned with the repository's current software milestone.
+- Continued to document ESP32 and servo integration as future work rather than claiming hardware progress that is not present in the repository.
+
 ---
 
 ## Folder Structure
@@ -75,8 +79,8 @@ PoolBallLaserProject/
 │   └── scripts/           # Calibration logic (capture, calibrate, mock generator)
 │
 ├── configs/              # Phase 3: Project configurations
-│   ├── dataset.yaml      # YOLO dataset definitions
-│   └── training.yaml     # Configurable hyperparameters for training
+│   ├── dataset.yaml       # YOLO dataset definitions
+│   └── training.yaml      # Configurable hyperparameters for training
 │
 ├── datasets/             # Phase 1 & 2: Image data and labels
 │   ├── raw/, merged/, cleaned/, train/, valid/, test/
