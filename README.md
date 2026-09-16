@@ -89,6 +89,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Reviewed the Phase 6 coordinate-mapping documentation and kept the static homography corner setup clearly documented as the current implementation.
 - Kept planned interactive corner selection and ESP32/servo integration separate from completed work.
 
+### 2026-09-16
+- Verified the coordinate-mapping implementation still uses the documented static table-corner source points and generates world-coordinate outputs plus mapping visualizations.
+- Kept interactive corner selection and ESP32/servo integration documented as future work.
+
 ---
 
 ## Folder Structure
