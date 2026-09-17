@@ -93,6 +93,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Verified the coordinate-mapping implementation still uses the documented static table-corner source points and generates world-coordinate outputs plus mapping visualizations.
 - Kept interactive corner selection and ESP32/servo integration documented as future work.
 
+### 2026-09-17
+- Reviewed the current repository tree and confirmed the backend still includes dedicated mapping and YOLO service components alongside the camera-calibration artifacts.
+- Kept the README status aligned with the existing Phase 6 software milestone without claiming hardware integration is complete.
+
 ---
 
 ## Folder Structure
