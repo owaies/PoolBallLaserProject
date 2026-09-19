@@ -101,6 +101,10 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Verified the coordinate-mapping script still uses the Phase 5 calibration files and static table-corner homography to produce real-world coordinate outputs.
 - Kept the README aligned with the repository by leaving interactive corner selection and ESP32/servo integration as future work.
 
+### 2026-09-19
+- Reviewed the current coordinate-mapping implementation and confirmed its documented workflow still combines Phase 5 calibration, static homography, world-coordinate export, and mapping visualizations.
+- Kept hardware integration and interactive corner selection documented as future work.
+
 ---
 
 ## Folder Structure
