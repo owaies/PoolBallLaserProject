@@ -32,13 +32,12 @@ def setup_logger(name, log_file, level=logging.INFO):
     
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    logger.addHandler(handler)
-    
-    # Also log to stdout for the main logger
-    if name == 'main_logger':
-        stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        logger.addHandler(stdout_handler)
+    if not logger.handlers:
+        logger.addHandler(handler)
+        if name == 'main_logger':
+            stdout_handler = logging.StreamHandler(sys.stdout)
+            stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            logger.addHandler(stdout_handler)
         
     return logger
 
