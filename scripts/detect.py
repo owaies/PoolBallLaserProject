@@ -59,7 +59,7 @@ def process_images() -> None:
         error_logger.error(f"Failed to load model: {e}", exc_info=True)
         return
 
-    image_paths = list(INPUT_DIR.glob('*.*'))
+    image_paths = sorted(INPUT_DIR.glob('*.*'), key=lambda path: path.name.lower())
     valid_exts = {'.jpg', '.jpeg', '.png', '.bmp'}
     image_paths = [p for p in image_paths if p.suffix.lower() in valid_exts]
 
