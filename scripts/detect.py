@@ -79,6 +79,8 @@ def process_images() -> None:
     for img_path in tqdm(image_paths, desc="Detecting pool balls"):
         try:
             start_time = time.time()
+            if img_path.stat().st_size > 25 * 1024 * 1024:
+                raise ValueError(f"Image exceeds the 25 MB processing limit: {img_path.name}")
             img = cv2.imread(str(img_path))
             if img is None:
                 raise ValueError(f"Failed to read image {img_path.name}")
