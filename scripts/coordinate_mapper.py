@@ -22,6 +22,9 @@ MAPPING_DIR = RESULTS_DIR / "mapping"
 LOGS_DIR = BASE_DIR / "logs"
 DOCS_DIR = BASE_DIR / "docs"
 
+for directory in (LOGS_DIR, MAPPING_DIR, DOCS_DIR):
+    directory.mkdir(parents=True, exist_ok=True)
+
 # Table standard dimensions (7-foot pool table play area in mm)
 TABLE_WIDTH_MM = 1981.0
 TABLE_HEIGHT_MM = 990.0
