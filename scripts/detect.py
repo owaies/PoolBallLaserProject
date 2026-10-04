@@ -139,7 +139,8 @@ def process_images() -> None:
 
             # Save annotated image
             out_path = OUTPUT_DIR / img_path.name
-            cv2.imwrite(str(out_path), img)
+            if not cv2.imwrite(str(out_path), img):
+                raise IOError(f"Failed to write annotated image: {out_path}")
 
         except Exception as e:
             error_logger.error(f"Error processing {img_path.name}: {e}", exc_info=True)
