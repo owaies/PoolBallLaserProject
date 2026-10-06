@@ -181,10 +181,20 @@ def main():
     world_results = []
     
     # Process detections
-    with open(csv_in, 'r') as f:
+    with open(csv_in, 'r', encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
-        for row in reader:
-            cx, cy = float(row["Center X"]), float(row["Center Y"])
+        required_columns = {"Image Name", "Detection ID", "Class", "Center X", "Center Y"}
+        missing_columns = required_columns.difference(reader.fieldnames or [])
+        if missing_columns:
+            raise ValueError(f"Detection CSV is missing required columns: {sorted(missing_columns)}")
+
+        for row_number, row in enumerate(reader, start=2):
+            try:
+                cx, cy = float(row["Center X"]), float(row["Center Y"])
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Invalid detection coordinates on CSV row {row_number}") from exc
+            if not np.isfinite(cx) or not np.isfinite(cy):
+                raise ValueError(f"Non-finite detection coordinates on CSV row {row_number}")
             wx, wy = undistort_and_map_point(cx, cy, mtx, dist, H)
             
             world_results.append({
