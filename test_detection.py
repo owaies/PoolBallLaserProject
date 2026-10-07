@@ -64,7 +64,10 @@ try:
     with urllib.request.urlopen(req, timeout=10) as r:
         print(f"[UNEXPECTED PASS] Status: {r.status}")
 except urllib.error.HTTPError as e:
-    print(f"[PASS] Correctly rejected with HTTP {e.code} (422 Unprocessable)")
+    if e.code == 422:
+        print(f"[PASS] Correctly rejected with HTTP {e.code} (422 Unprocessable)")
+    else:
+        print(f"[FAIL] Expected HTTP 422, received HTTP {e.code}")
     
 # ---- Test 3: Coordinate mapping at edge ----
 print()
