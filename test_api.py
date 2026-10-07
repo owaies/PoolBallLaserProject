@@ -63,3 +63,5 @@ print('='*80)
 passes = sum(1 for r in results if r['status'] == 'PASS')
 print(f"SUMMARY: {passes}/{len(results)} tests passed")
 print('='*80)
+if passes != len(results):
+    sys.exit(1)
