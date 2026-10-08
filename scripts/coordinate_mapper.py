@@ -80,7 +80,11 @@ def compute_homography() -> np.ndarray:
         [0, TABLE_HEIGHT_MM]                     # Bottom-Left
     ], dtype=np.float32)
 
-    H, _ = cv2.findHomography(src_pts, dst_pts)
+    H, status = cv2.findHomography(src_pts, dst_pts)
+    if H is None or status is None:
+        raise RuntimeError("Unable to compute a valid table homography")
+    if not np.all(np.isfinite(H)):
+        raise RuntimeError("Computed homography contains non-finite values")
     return H
 
 def undistort_and_map_point(x: float, y: float, mtx: np.ndarray, dist: np.ndarray, H: np.ndarray) -> Tuple[float, float]:
