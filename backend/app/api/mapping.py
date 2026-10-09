@@ -17,8 +17,13 @@ def map_coordinates(request: MappingRequest):
             "world_x": round(world_x, 2),
             "world_y": round(world_y, 2)
         }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid coordinate mapping input: {str(e)}"
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Coordinate mapping error: {str(e)}"
+            detail="Coordinate mapping failed unexpectedly."
         )
