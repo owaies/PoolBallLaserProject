@@ -71,7 +71,12 @@ class MappingService:
         }
 
     def map_coordinates(self, pixel_x: float, pixel_y: float) -> Tuple[float, float]:
-        """Undistorts and transforms coordinate points from pixel space to world table millimeters."""
+        """Undistort and transform finite pixel coordinates into table millimeters."""
+        if not np.isfinite(pixel_x) or not np.isfinite(pixel_y):
+            raise ValueError("Pixel coordinates must be finite numbers.")
+        if self.H is None or self.H.shape != (3, 3) or not np.isfinite(self.H).all():
+            raise ValueError("A valid homography matrix is required for coordinate mapping.")
+
         if self.is_calibrated and self.camera_matrix is not None and self.dist_coeffs is not None:
             # 1. Lens Undistortion
             pts = np.array([[[pixel_x, pixel_y]]], dtype=np.float32)
