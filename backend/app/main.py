@@ -83,7 +83,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "status": "error",
             "message": "An unexpected error occurred on the server.",
-            "details": str(exc),
             "timestamp": datetime.utcnow().isoformat()
         }
     )
