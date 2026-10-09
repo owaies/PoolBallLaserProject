@@ -98,3 +98,25 @@ def test_logs_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
+
+def test_mapping_rejects_non_finite_pixel_coordinates():
+    from backend.app.services.mapping_service import mapping_service
+
+    with pytest.raises(ValueError, match="finite numbers"):
+        mapping_service.map_coordinates(float("nan"), 300.0)
+    with pytest.raises(ValueError, match="finite numbers"):
+        mapping_service.map_coordinates(400.0, float("inf"))
+
+
+def test_mapping_rejects_invalid_homography():
+    from backend.app.services.mapping_service import MappingService
+
+    service = MappingService.__new__(MappingService)
+    service.H = np.full((3, 3), np.nan)
+    service.is_calibrated = False
+    service.camera_matrix = None
+    service.dist_coeffs = None
+
+    with pytest.raises(ValueError, match="valid homography"):
+        service.map_coordinates(400.0, 300.0)
+
