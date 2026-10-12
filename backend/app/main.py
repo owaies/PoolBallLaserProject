@@ -44,8 +44,8 @@ app.mount("/api/static/uploads", StaticFiles(directory=uploads_dir), name="stati
 # 4. CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict this to specific origins in production
-    allow_credentials=True,
+    allow_origins=["*"],  # Public API; credentialed cross-origin requests are disabled
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
