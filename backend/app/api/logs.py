@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from backend.app.core.config import settings
 from typing import List
-import os
+from collections import deque
 
 router = APIRouter()
 
@@ -15,9 +15,8 @@ def get_logs(lines: int = Query(100, ge=1, le=1000)):
     try:
         # Read the last N lines from the log file
         with open(log_file, "r", encoding="utf-8") as f:
-            all_lines = f.readlines()
-            last_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
-            # Strip newline characters for clean JSON array response
+            # Keep memory bounded even when the log file has grown for months.
+            last_lines = deque(f, maxlen=lines)
             return [line.strip() for line in last_lines]
     except Exception as e:
         raise HTTPException(
