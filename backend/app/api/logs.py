@@ -18,8 +18,8 @@ def get_logs(lines: int = Query(100, ge=1, le=1000)):
             # Keep memory bounded even when the log file has grown for months.
             last_lines = deque(f, maxlen=lines)
             return [line.strip() for line in last_lines]
-    except Exception as e:
+    except (OSError, UnicodeError):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error reading log file: {str(e)}"
-        )
+            detail="Unable to read backend logs."
+        ) from None
