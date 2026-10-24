@@ -120,3 +120,26 @@ def test_mapping_rejects_invalid_homography():
     with pytest.raises(ValueError, match="valid homography"):
         service.map_coordinates(400.0, 300.0)
 
+
+def test_logs_endpoint_hides_filesystem_errors(monkeypatch, tmp_path):
+    from backend.app.core.config import settings
+
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    log_file = log_dir / "backend.log"
+    log_file.write_text("example log line\n", encoding="utf-8")
+    monkeypatch.setattr(settings, "BACKEND_DIR", tmp_path)
+
+    original_open = open
+
+    def fail_log_open(path, *args, **kwargs):
+        if str(path) == str(log_file):
+            raise PermissionError("private filesystem path")
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", fail_log_open)
+    response = client.get("/api/logs")
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Unable to read backend logs."
+    assert "private filesystem path" not in response.text
