@@ -51,6 +51,8 @@ backend/
    copy .env.example .env
    ```
 
+Admin authentication settings have no built-in credentials. If an admin authentication route is enabled in a future deployment, configure `ADMIN_PASSWORD` (at least 12 characters) and `ADMIN_JWT_SECRET` (at least 32 random characters) in the untracked `.env` file. Do not restore the previous hardcoded defaults.
+
 ---
 
 ## Running the API
