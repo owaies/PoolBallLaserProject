@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Body
 from backend.app.schemas.schemas import DetectionResponse, FolderDetectionResponse
 from backend.app.services.yolo_service import yolo_service
@@ -9,36 +11,45 @@ logger = logging.getLogger("backend_logger")
 
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
+
 @router.post("/detect/image", response_model=DetectionResponse)
 async def detect_image(file: UploadFile = File(...)):
-    # 1. Validate File Extension
-    ext = file.filename[file.filename.rfind('.'):].lower() if '.' in file.filename else ''
+    # Use only the suffix from the client filename. The original name is never
+    # used as an output path because upload filenames are untrusted.
+    original_name = (file.filename or "").replace("\\", "/")
+    ext = f".{original_name.rsplit('.', 1)[-1].lower()}" if "." in original_name else ""
     if ext not in VALID_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Unsupported file type '{ext}'. Supported formats: {', '.join(VALID_EXTENSIONS)}"
+            detail=f"Unsupported file type '{ext}'. Supported formats: {', '.join(sorted(VALID_EXTENSIONS))}"
         )
 
-    # 2. Read File content and validate size
+    # Read at most one byte beyond the configured limit. Checking after an
+    # unbounded read would allow oversized uploads to consume arbitrary memory.
     try:
-        content = await file.read()
+        content = await file.read(settings.MAX_UPLOAD_SIZE + 1)
         if len(content) > settings.MAX_UPLOAD_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File exceeds maximum upload size of {settings.MAX_UPLOAD_SIZE / (1024*1024):.1f}MB"
+                detail=f"File exceeds maximum upload size of {settings.MAX_UPLOAD_SIZE / (1024 * 1024):.1f}MB"
             )
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Failed to read upload file: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Failed to read uploaded image")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error reading uploaded file contents"
-        )
+        ) from None
 
-    # 3. Predict and annotate
+    # A generated filename prevents traversal and collisions in annotated output
+    # storage while preserving the validated image extension for OpenCV.
+    output_name = f"{uuid4().hex}{ext}"
+
     try:
-        detections, all_detections, annotated_url, debug_annotated_url, processing_time = yolo_service.predict_image(content, file.filename)
+        detections, all_detections, annotated_url, debug_annotated_url, processing_time = (
+            yolo_service.predict_image(content, output_name)
+        )
         return {
             "detections": detections,
             "all_detections": all_detections,
@@ -46,12 +57,19 @@ async def detect_image(file: UploadFile = File(...)):
             "debug_annotated_image_url": debug_annotated_url,
             "processing_time": round(processing_time, 4)
         }
-    except Exception as e:
-        logger.error(f"Inference error: {e}", exc_info=True)
+    except ValueError as exc:
+        logger.info("Rejected invalid image upload: %s", exc)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"YOLO inference error: {str(e)}"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file is not a valid image."
+        ) from exc
+    except Exception:
+        logger.exception("YOLO inference failed")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Object detection is temporarily unavailable."
+        ) from None
+
 
 @router.post("/detect/folder", response_model=FolderDetectionResponse)
 def detect_folder(folder_path: str = Body(..., embed=True)):
