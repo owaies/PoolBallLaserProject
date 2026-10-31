@@ -72,7 +72,6 @@ async def detect_image(file: UploadFile = File(...)):
         ) from None
 
 
-@router.post("/detect/folder", response_model=FolderDetectionResponse)
 def resolve_dataset_folder(folder_path: str) -> Path:
     """Resolve a requested folder and ensure it stays inside the dataset root."""
     if not isinstance(folder_path, str) or not folder_path.strip():
