@@ -1,6 +1,9 @@
 from pathlib import Path
+import sys
 import tempfile
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from backend.app.services.path_security import resolve_dataset_folder
 
