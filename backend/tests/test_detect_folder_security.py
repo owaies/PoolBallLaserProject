@@ -1,51 +1,47 @@
 from pathlib import Path
+import tempfile
+import unittest
 
-import pytest
-
-from backend.app.api.detect import resolve_dataset_folder
-from backend.app.core.config import settings
-
-
-def test_resolves_relative_path_inside_dataset_root(tmp_path: Path, monkeypatch) -> None:
-    project_root = tmp_path / "project"
-    target = project_root / "datasets" / "raw"
-    target.mkdir(parents=True)
-    monkeypatch.setattr(settings, "BASE_DIR", project_root)
-
-    assert resolve_dataset_folder("datasets/raw") == target.resolve()
+from backend.app.services.path_security import resolve_dataset_folder
 
 
-def test_rejects_absolute_path_outside_dataset_root(tmp_path: Path, monkeypatch) -> None:
-    project_root = tmp_path / "project"
-    (project_root / "datasets").mkdir(parents=True)
-    outside = tmp_path / "private"
-    outside.mkdir()
-    monkeypatch.setattr(settings, "BASE_DIR", project_root)
+class DatasetFolderPathTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp_dir.name) / "project"
+        self.datasets = self.root / "datasets"
+        self.datasets.mkdir(parents=True)
 
-    with pytest.raises(ValueError, match="inside the datasets directory"):
-        resolve_dataset_folder(str(outside))
+    def tearDown(self) -> None:
+        self.temp_dir.cleanup()
+
+    def test_resolves_relative_path_inside_dataset_root(self) -> None:
+        target = self.datasets / "raw"
+        target.mkdir()
+        self.assertEqual(
+            resolve_dataset_folder("datasets/raw", self.root, self.datasets),
+            target.resolve(),
+        )
+
+    def test_rejects_absolute_path_outside_dataset_root(self) -> None:
+        outside = Path(self.temp_dir.name) / "private"
+        outside.mkdir()
+        with self.assertRaisesRegex(ValueError, "inside the datasets directory"):
+            resolve_dataset_folder(str(outside), self.root, self.datasets)
+
+    def test_rejects_symlink_that_escapes_dataset_root(self) -> None:
+        outside = Path(self.temp_dir.name) / "private"
+        outside.mkdir()
+        (self.datasets / "external").symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "inside the datasets directory"):
+            resolve_dataset_folder("datasets/external", self.root, self.datasets)
+
+    def test_rejects_files_instead_of_directories(self) -> None:
+        file_path = self.datasets / "not-a-folder.txt"
+        file_path.write_text("not a folder", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be a directory"):
+            resolve_dataset_folder("datasets/not-a-folder.txt", self.root, self.datasets)
 
 
-def test_rejects_symlink_that_escapes_dataset_root(tmp_path: Path, monkeypatch) -> None:
-    project_root = tmp_path / "project"
-    datasets = project_root / "datasets"
-    datasets.mkdir(parents=True)
-    outside = tmp_path / "private"
-    outside.mkdir()
-    (datasets / "external").symlink_to(outside, target_is_directory=True)
-    monkeypatch.setattr(settings, "BASE_DIR", project_root)
-
-    with pytest.raises(ValueError, match="inside the datasets directory"):
-        resolve_dataset_folder("datasets/external")
-
-
-def test_rejects_files_instead_of_directories(tmp_path: Path, monkeypatch) -> None:
-    project_root = tmp_path / "project"
-    datasets = project_root / "datasets"
-    datasets.mkdir(parents=True)
-    file_path = datasets / "not-a-folder.txt"
-    file_path.write_text("not a folder", encoding="utf-8")
-    monkeypatch.setattr(settings, "BASE_DIR", project_root)
-
-    with pytest.raises(ValueError, match="must be a directory"):
-        resolve_dataset_folder("datasets/not-a-folder.txt")
+if __name__ == "__main__":
+    unittest.main()

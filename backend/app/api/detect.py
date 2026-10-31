@@ -1,4 +1,3 @@
-from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Body
@@ -6,6 +5,7 @@ from backend.app.schemas.schemas import DetectionResponse, FolderDetectionRespon
 from backend.app.services.yolo_service import yolo_service
 from backend.app.core.config import settings
 import logging
+from backend.app.services.path_security import resolve_dataset_folder
 
 router = APIRouter()
 logger = logging.getLogger("backend_logger")
@@ -72,24 +72,6 @@ async def detect_image(file: UploadFile = File(...)):
         ) from None
 
 
-def resolve_dataset_folder(folder_path: str) -> Path:
-    """Resolve a requested folder and ensure it stays inside the dataset root."""
-    if not isinstance(folder_path, str) or not folder_path.strip():
-        raise ValueError("A detection folder is required.")
-
-    requested = Path(folder_path).expanduser()
-    if not requested.is_absolute():
-        requested = settings.BASE_DIR / requested
-
-    target_dir = requested.resolve(strict=True)
-    datasets_root = settings.DATASETS_DIR.resolve(strict=True)
-    if not target_dir.is_dir():
-        raise ValueError("Detection path must be a directory.")
-    if not target_dir.is_relative_to(datasets_root):
-        raise ValueError("Detection folder must be inside the datasets directory.")
-    return target_dir
-
-
 @router.post("/detect/folder", response_model=FolderDetectionResponse)
 def detect_folder(folder_path: str = Body(..., embed=True)):
     # Keep the existing explicit traversal rejection before filesystem resolution.
@@ -100,7 +82,7 @@ def detect_folder(folder_path: str = Body(..., embed=True)):
         )
 
     try:
-        target_dir = resolve_dataset_folder(folder_path)
+        target_dir = resolve_dataset_folder(folder_path, settings.BASE_DIR, settings.DATASETS_DIR)
     except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
