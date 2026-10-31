@@ -50,7 +50,7 @@ export default function Batch() {
                 <Folder className="absolute left-3.5 top-3.5 text-zinc-600" size={14} />
               </div>
               <span className="text-[9px] text-zinc-600 block leading-normal">
-                Absolute path or path relative to project root. For security, directory traversals (`../`) are blocked.
+                Choose an existing folder inside the project's datasets directory, such as datasets/raw. Paths outside datasets are rejected.
               </span>
             </div>
 
