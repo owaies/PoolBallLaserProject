@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Body
@@ -72,8 +73,27 @@ async def detect_image(file: UploadFile = File(...)):
 
 
 @router.post("/detect/folder", response_model=FolderDetectionResponse)
+def resolve_dataset_folder(folder_path: str) -> Path:
+    """Resolve a requested folder and ensure it stays inside the dataset root."""
+    if not isinstance(folder_path, str) or not folder_path.strip():
+        raise ValueError("A detection folder is required.")
+
+    requested = Path(folder_path).expanduser()
+    if not requested.is_absolute():
+        requested = settings.BASE_DIR / requested
+
+    target_dir = requested.resolve(strict=True)
+    datasets_root = settings.DATASETS_DIR.resolve(strict=True)
+    if not target_dir.is_dir():
+        raise ValueError("Detection path must be a directory.")
+    if not target_dir.is_relative_to(datasets_root):
+        raise ValueError("Detection folder must be inside the datasets directory.")
+    return target_dir
+
+
+@router.post("/detect/folder", response_model=FolderDetectionResponse)
 def detect_folder(folder_path: str = Body(..., embed=True)):
-    # Prevent directory traversal or invalid paths
+    # Keep the existing explicit traversal rejection before filesystem resolution.
     if ".." in folder_path or folder_path.strip() == "":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -81,16 +101,28 @@ def detect_folder(folder_path: str = Body(..., embed=True)):
         )
 
     try:
-        results = yolo_service.predict_folder(folder_path)
-        return results
-    except FileNotFoundError as e:
+        target_dir = resolve_dataset_folder(folder_path)
+    except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
-    except Exception as e:
-        logger.error(f"Folder detection failed: {e}", exc_info=True)
+            detail="Detection folder not found."
+        ) from None
+    except (OSError, RuntimeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Detection folder must be an existing directory inside the datasets directory."
+        ) from None
+
+    try:
+        return yolo_service.predict_folder(str(target_dir))
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Detection folder not found."
+        ) from None
+    except Exception:
+        logger.exception("Folder detection failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing folder detection: {str(e)}"
-        )
+            detail="Folder detection failed."
+        ) from None
