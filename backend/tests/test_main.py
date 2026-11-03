@@ -108,6 +108,25 @@ def test_mapping_rejects_non_finite_pixel_coordinates():
         mapping_service.map_coordinates(400.0, float("inf"))
 
 
+def test_mapping_rejects_coordinates_outside_opencv_float32_range():
+    from backend.app.services.mapping_service import mapping_service
+
+    too_large = float(np.finfo(np.float32).max) * 2
+    with pytest.raises(ValueError, match="supported numeric range"):
+        mapping_service.map_coordinates(too_large, 300.0)
+
+
+def test_mapping_rejects_non_finite_transformed_result(monkeypatch):
+    from backend.app.services.mapping_service import mapping_service
+
+    monkeypatch.setattr(
+        "backend.app.services.mapping_service.cv2.perspectiveTransform",
+        lambda points, homography: np.array([[[np.inf, 1.0]]], dtype=np.float32),
+    )
+    with pytest.raises(ValueError, match="non-finite result"):
+        mapping_service.map_coordinates(400.0, 300.0)
+
+
 def test_mapping_rejects_invalid_homography():
     from backend.app.services.mapping_service import MappingService
 
