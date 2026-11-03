@@ -74,6 +74,12 @@ class MappingService:
         """Undistort and transform finite pixel coordinates into table millimeters."""
         if not np.isfinite(pixel_x) or not np.isfinite(pixel_y):
             raise ValueError("Pixel coordinates must be finite numbers.")
+        # OpenCV's point transforms use float32 here. Reject values that would
+        # overflow during conversion instead of letting invalid coordinates
+        # reach the native OpenCV routines.
+        float32_limit = np.finfo(np.float32).max
+        if abs(pixel_x) > float32_limit or abs(pixel_y) > float32_limit:
+            raise ValueError("Pixel coordinates exceed the supported numeric range.")
         if self.H is None or self.H.shape != (3, 3) or not np.isfinite(self.H).all():
             raise ValueError("A valid homography matrix is required for coordinate mapping.")
 
@@ -88,6 +94,8 @@ class MappingService:
         # 2. Apply Homography
         world_pts = cv2.perspectiveTransform(undistorted_pts, self.H)
         world_x, world_y = world_pts[0][0]
+        if not np.isfinite(world_x) or not np.isfinite(world_y):
+            raise ValueError("Coordinate mapping produced a non-finite result.")
         
         return float(world_x), float(world_y)
 
