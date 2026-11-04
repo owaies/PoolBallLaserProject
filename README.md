@@ -109,6 +109,11 @@ This project leverages an Ultralytics YOLO AI object detection model and a USB c
 - Reviewed the README's Phase 6 documentation and confirmed the coordinate-mapping workflow remains the latest documented software milestone.
 - Kept the project status accurate by retaining ESP32/servo integration and interactive corner selection as future work.
 
+
+### 2026-11-04
+- Reviewed the mapping service's current numeric-safety checks, including rejection of pixel coordinates beyond OpenCV's float32 range and non-finite transformed results.
+- Confirmed the recent regression changes cover oversized inputs and invalid perspective-transform output; no hardware integration is claimed as complete.
+
 ---
 
 ## Folder Structure
