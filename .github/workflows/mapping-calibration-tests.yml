@@ -1,0 +1,35 @@
+name: Mapping calibration tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/core/config.py"
+      - "backend/app/services/mapping_service.py"
+      - "backend/tests/test_mapping_calibration.py"
+      - ".github/workflows/mapping-calibration-tests.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/app/core/config.py"
+      - "backend/app/services/mapping_service.py"
+      - "backend/tests/test_mapping_calibration.py"
+      - ".github/workflows/mapping-calibration-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  mapping-calibration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install focused test dependencies
+        run: python -m pip install numpy opencv-python-headless pydantic-settings pytest
+      - name: Run calibration validation tests
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q backend/tests/test_mapping_calibration.py
