@@ -23,23 +23,51 @@ class MappingService:
         self.compute_homography()
 
     def load_calibration(self) -> None:
-        """Load intrinsic camera parameters computed in Phase 5."""
+        """Load and validate intrinsic camera parameters computed in Phase 5."""
+        # Clear stale values before every load attempt so a failed reload cannot
+        # leave the service marked uncalibrated while exposing old matrices.
+        self.camera_matrix = None
+        self.dist_coeffs = None
+        self.is_calibrated = False
+
         calib_dir = settings.BASE_DIR / "calibration" / "camera_matrix"
         mtx_file = calib_dir / "camera_matrix.npy"
         dist_file = calib_dir / "dist_coeffs.npy"
-        
-        if mtx_file.exists() and dist_file.exists():
-            try:
-                self.camera_matrix = np.load(str(mtx_file))
-                self.dist_coeffs = np.load(str(dist_file))
-                self.is_calibrated = True
-                logger.info("Loaded camera calibration parameters successfully.")
-            except Exception as e:
-                logger.error(f"Error loading camera calibration: {e}", exc_info=True)
-                self.is_calibrated = False
-        else:
-            logger.warning(f"Calibration parameters not found in {calib_dir}. Coordinates will map without lens correction.")
-            self.is_calibrated = False
+
+        if not mtx_file.exists() or not dist_file.exists():
+            logger.warning(
+                f"Calibration parameters not found in {calib_dir}. "
+                "Coordinates will map without lens correction."
+            )
+            return
+
+        try:
+            camera_matrix = np.load(str(mtx_file), allow_pickle=False)
+            dist_coeffs = np.load(str(dist_file), allow_pickle=False)
+            supported_distortion_sizes = {4, 5, 8, 12, 14}
+
+            if (
+                camera_matrix.shape != (3, 3)
+                or not np.isfinite(camera_matrix).all()
+                or camera_matrix[0, 0] <= 0
+                or camera_matrix[1, 1] <= 0
+            ):
+                raise ValueError("Camera matrix must be a finite 3x3 matrix with positive focal lengths.")
+
+            if (
+                dist_coeffs.size not in supported_distortion_sizes
+                or not np.isfinite(dist_coeffs).all()
+            ):
+                raise ValueError(
+                    "Distortion coefficients must contain 4, 5, 8, 12, or 14 finite values."
+                )
+
+            self.camera_matrix = camera_matrix
+            self.dist_coeffs = dist_coeffs
+            self.is_calibrated = True
+            logger.info("Loaded and validated camera calibration parameters successfully.")
+        except Exception as e:
+            logger.error(f"Invalid camera calibration parameters in {calib_dir}: {e}", exc_info=True)
 
     def compute_homography(self) -> None:
         """Computes the perspective homography mapping table corners in pixels to real-world mm."""
