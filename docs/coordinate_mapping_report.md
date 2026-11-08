@@ -58,3 +58,11 @@ $$Y = (2.475000 \times y) - 247.500000$$
 ## 6. Limitations
 - **Coplanar Assumption:** Homography assumes all points lie on the 2D playing surface. Because pool balls have a physical height (radius $\approx 28.58$ mm), the camera's perspective angle causes a slight perspective parallax error (radial displacement outwards from the center of the image).
 - **Static Corner Configuration:** The current mapping uses fixed coordinates for the table corners. A dynamic calibration tool should be used during final deployment to allow manual corner clicking.
+
+## Calibration file validation
+
+At startup, the mapping service accepts a camera matrix only when it is a finite 3 × 3 matrix with positive horizontal and vertical focal lengths. Distortion coefficients must contain 4, 5, 8, 12, or 14 finite values, matching supported OpenCV layouts.
+
+If either file is missing or malformed, the service clears any previously loaded calibration arrays and continues in the documented uncalibrated mode. This prevents stale or invalid matrices from being passed to OpenCV during coordinate mapping.
+
+The focused regression suite is `python -m pytest -q backend/tests/test_mapping_calibration.py`. The dedicated Mapping calibration tests workflow runs this suite on pushes and pull requests affecting the calibration implementation or tests.
