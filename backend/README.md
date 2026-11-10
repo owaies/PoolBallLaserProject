@@ -135,3 +135,13 @@ To execute the Pytest unit testing suite:
 cd backend
 pytest tests/
 ```
+
+## Camera calibration input
+
+The mapping service accepts a finite 3×3 camera matrix with positive focal lengths. Distortion coefficients must be a one-dimensional vector or a single-row/single-column vector containing 4, 5, 8, 12, or 14 finite values. Matrix-shaped or higher-dimensional coefficient arrays are treated as invalid calibration and the service falls back to mapping without lens correction.
+
+Run the focused calibration checks from the repository root with:
+
+```bash
+python -m pytest -q backend/tests/test_mapping_calibration.py
+```
