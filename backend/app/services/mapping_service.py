@@ -54,12 +54,16 @@ class MappingService:
             ):
                 raise ValueError("Camera matrix must be a finite 3x3 matrix with positive focal lengths.")
 
+            distortion_is_vector = dist_coeffs.ndim == 1 or (
+                dist_coeffs.ndim == 2 and 1 in dist_coeffs.shape
+            )
             if (
-                dist_coeffs.size not in supported_distortion_sizes
+                not distortion_is_vector
+                or dist_coeffs.size not in supported_distortion_sizes
                 or not np.isfinite(dist_coeffs).all()
             ):
                 raise ValueError(
-                    "Distortion coefficients must contain 4, 5, 8, 12, or 14 finite values."
+                    "Distortion coefficients must be a finite 4, 5, 8, 12, or 14-value vector."
                 )
 
             self.camera_matrix = camera_matrix
