@@ -48,6 +48,8 @@ def test_load_calibration_accepts_supported_distortion_shapes(
         (np.array([[np.nan, 0, 0], [0, 1, 0], [0, 0, 1]]), np.zeros(5)),
         (np.array([[0, 0, 0], [0, 1, 0], [0, 0, 1]]), np.zeros(5)),
         (np.eye(3), np.zeros(3)),
+        (np.eye(3), np.zeros((2, 2))),
+        (np.eye(3), np.zeros((2, 2, 2))),
         (np.eye(3), np.array([0.0, 0.0, np.nan, 0.0, 0.0])),
     ],
     ids=[
@@ -55,6 +57,8 @@ def test_load_calibration_accepts_supported_distortion_shapes(
         "non-finite-camera-matrix",
         "non-positive-focal-length",
         "unsupported-distortion-count",
+        "two-dimensional-distortion-matrix",
+        "three-dimensional-distortion-array",
         "non-finite-distortion-coefficient",
     ],
 )
