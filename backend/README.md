@@ -1,28 +1,4 @@
-# Pool Ball Identification & Laser Positioning REST API Backend
-
-This is the FastAPI backend for the AI-Based Pool Ball Identification and Laser Positioning System. It loads the YOLOv8 model, correct radial lens distortion, applies homography mapping, and exposes REST endpoints.
-
----
-
-## Folder Structure
-
-```
-backend/
-├── app/
-│   ├── api/             # API Router endpoints (health, model, detect, mapping, stats, logs)
-│   ├── core/            # Configuration setting (config.py)
-│   ├── middleware/      # Middleware definitions
-│   ├── models/          # Database models (if needed in future)
-│   ├── schemas/         # Pydantic schemas (schemas.py)
-│   ├── services/        # Service singletons (yolo_service, mapping_service)
-│   ├── static/          # Static files served by FastAPI
-│   ├── uploads/         # Destination folder for uploaded/annotated images
-│   └── main.py          # FastAPI application entry point
-├── logs/                # API log files (backend.log)
-├── tests/               # Pytest unit tests (test_main.py)
-├── .env                 # Local environment configuration file
-├── .env.example         # Template for environment configuration
-├── requirements.txt     # Python backend dependencies
+hon backend dependencies
 └── README.md
 ```
 
@@ -138,7 +114,7 @@ pytest tests/
 
 ## Camera calibration input
 
-The mapping service accepts a finite 3×3 camera matrix with positive focal lengths. Distortion coefficients must be a one-dimensional vector or a single-row/single-column vector containing 4, 5, 8, 12, or 14 finite values. Matrix-shaped or higher-dimensional coefficient arrays are treated as invalid calibration and the service falls back to mapping without lens correction.
+The mapping service accepts a finite 3×3 intrinsic camera matrix with positive focal lengths and a canonical homogeneous row of `[0, 0, 1]`. Distortion coefficients must be a one-dimensional vector or a single-row/single-column vector containing 4, 5, 8, 12, or 14 finite values. Invalid matrix rows, matrix-shaped distortion arrays, or higher-dimensional coefficient arrays cause calibration to be rejected, and the service falls back to mapping without lens correction.
 
 Run the focused calibration checks from the repository root with:
 
