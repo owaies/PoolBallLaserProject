@@ -51,8 +51,17 @@ class MappingService:
                 or not np.isfinite(camera_matrix).all()
                 or camera_matrix[0, 0] <= 0
                 or camera_matrix[1, 1] <= 0
+                or not np.allclose(
+                    camera_matrix[2],
+                    np.array([0.0, 0.0, 1.0]),
+                    rtol=0.0,
+                    atol=1e-9,
+                )
             ):
-                raise ValueError("Camera matrix must be a finite 3x3 matrix with positive focal lengths.")
+                raise ValueError(
+                    "Camera matrix must be a finite 3x3 intrinsic matrix "
+                    "with positive focal lengths and a canonical homogeneous row."
+                )
 
             distortion_is_vector = dist_coeffs.ndim == 1 or (
                 dist_coeffs.ndim == 2 and 1 in dist_coeffs.shape
