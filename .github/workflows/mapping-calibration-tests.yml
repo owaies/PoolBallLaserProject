@@ -7,6 +7,7 @@ on:
       - "backend/app/core/config.py"
       - "backend/app/services/mapping_service.py"
       - "backend/tests/test_mapping_calibration.py"
+      - "backend/tests/test_settings_validation.py"
       - ".github/workflows/mapping-calibration-tests.yml"
   pull_request:
     branches: [main]
@@ -32,4 +33,4 @@ jobs:
       - name: Run calibration validation tests
         env:
           PYTHONPATH: .
-        run: python -m pytest -q backend/tests/test_mapping_calibration.py
+        run: python -m pytest -q backend/tests/test_mapping_calibration.py backend/tests/test_settings_validation.py
