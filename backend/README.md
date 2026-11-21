@@ -145,3 +145,14 @@ Run the focused calibration checks from the repository root with:
 ```bash
 python -m pytest -q backend/tests/test_mapping_calibration.py
 ```
+
+
+## Runtime settings validation
+
+The API validates configuration when the settings object is created. Detection confidence and IoU thresholds must be between 0 and 1 inclusive. Image size, upload byte limit, and admin JWT expiry must be positive integers. The server port must be between 1 and 65535. Invalid environment values stop startup with a validation error instead of reaching model initialization or request handling.
+
+Run the focused configuration and camera calibration checks from the repository root with:
+
+```bash
+python -m pytest -q backend/tests/test_mapping_calibration.py backend/tests/test_settings_validation.py
+```
