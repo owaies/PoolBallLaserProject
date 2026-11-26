@@ -1,0 +1,115 @@
+=== PAGE 11 ===
+•Idealized Physics Simplification:Kinematic models
+[21] and solvers [24] assume rigid-body dynamics, ig-
+noring felt wear, table leveling drift, and cushion energy
+loss. Aiming offsets above 0.3 degrees cause shot failure
+in physical systems [22], yet remain uncalibrated.
+•Visual Interference:Cue sticks and hands introduce
+moving distractors that confuse trackers [20], [27].
+E. Laser Projection Hardware and Closed-Loop Actuation
+Absences
+The most critical gap is the lack of physical hardware
+testing. In 85% of the papers (34 out of 40), physical projection
+or mechanical actuators wereNot Attempted:
+•Visual Projection Gaps:Software screen overlays [1]–
+[7], [9] do not guide players on the table. DLP projectors
+[10], [26] lose contrast and appear washed out under
+bright overhead lights.
+•Galvanometer Steering Dynamics:Low-latency gal-
+vanometer mirror steering [17] and closed-loop visual
+servoing [39] are not integrated into standard vision
+papers.
+•Actuator Backlash:Gantry robots [15] reach 0.6 mm
+positioning accuracy but are bulky and slow. Precision
+PSD tracking [18] reaches 30µm but is expensive. Low-
+cost, closed-loop laser positioning is absent.
+F . Consolidated Matrix of Identified Literature Gaps
+X. CHALLENGES ANDLIMITATIONS
+Key systemic challenges restricting real-world deployment
+include:
+A. High Computational and Power Constraints
+Running deep semantic segmentors (like U-Net or Mask R-
+CNN) on compact single-board devices (such as a Raspberry
+Pi) requires significant network quantization and pruning to
+achieve acceptable frame rates.
+B. Adversarial and Visual Susceptibility
+Vision pipelines remain sensitive to practical disturbances.
+Moving hands, cue sticks, or changing shadows on the felt
+disrupt edge detection and cause false targets in neural classi-
+fiers.
+C. Data Long-Tail Distribution
+Building comprehensive training datasets for edge cases—
+such as tightly clustered balls, steep reflection angles, or worn
+felt textures—remains labor-intensive and costly.
+XI. FUTURERESEARCHDIRECTIONS
+To address these challenges, future efforts should focus on:
+A. Neuromorphic Edge Computing
+Exploring event-driven, spike-based sensors to achieve
+ultra-low processing delays (<1ms) and reduced power
+consumption, enabling high-speed collision tracking without
+motion blur.
+B. Foundation Models for Cue Sports
+Developing self-supervised vision models capable of trans-
+ferring across different pool tables, felt colors, and lighting
+setups without manual recalibration.
+C. Formal Mechatronic Verification
+Combining control barrier functions (CBFs) with neural
+trajectory planners to ensure safe, stable operation during high-
+speed galvanometer laser steering.
+XII. CONCLUSION
+This survey has reviewed computer vision, trajectory predic-
+tion, and physical guidance methodologies in autonomous cue-
+sport systems. By establishing a 5-axis taxonomy, compiling
+a 40-paper comparison matrix, and evaluating hardware trade-
+offs, this work outlines key progress and persistent limitations
+in the field. Resolving existing gaps in light sensitivity, edge
+processing delays, and physical projection calibration will be
+essential to building practical, low-cost training assistants.
+REFERENCES
+[1] Y .-H. Wang, M.-T. Lin, Y .-Z. Li, G.-Y . Lin, and Y .-C. Chen, “Evaluation
+of Pool Balls Detection Using Deep Learning Segmentation,” 2023.
+[2] J. Gao, Q. He, H. Gao, Z. Zhan, and Z. Wu, “Design of an Efficient
+Multi-Objective Recognition Approach for 8-Ball Billiards Vision Sys-
+tem,”International Archives of the Photogrammetry, Remote Sensing
+and Spatial Information Sciences, vol. XLII-3/W10, pp. 39–53, 2018.
+[3] W. Pan, D. Zhu, J. Wang, and H. Zhu, “Effective Recognition Design in
+8-Ball Billiards Vision Systems for Training Purposes Based on Xcep-
+tion Network Modified by Improved Chaos African Vulture Optimizer,”
+Scientific Reports, vol. 14, Art. no. 13914, 2024, doi: 10.1038/s41598-
+024-63955-3.
+[4] S. C. Chua, E. K. Wong, and V . C. Koo, “Pool Balls Identification
+and Calibration for a Pool Robot,” inProc. Int. Conf. Robotics, Vision,
+Information and Signal Processing (ROVISP), Penang, Malaysia, Jan.
+2003, pp. 312–315.
+[5] S. Bauza, B. Choi, C. Huang, and O. Souverneva, “POOL-AID: Detec-
+tion and Identification of Pool Balls for the Purpose of Recommending
+Shots to Beginner Players,” Embedded Systems Design Project Report,
+Univ. California San Diego, La Jolla, CA, USA, 2016.
+[6] J. M. Schiøtt, V . S. Petersen, and D. P. Papadopoulos, “pix2pockets:
+Shot Suggestions in 8-Ball Pool from a Single Image in the Wild,”
+arXiv:2504.12045, 2025.
+[7] H. Uchiyama and H. Saito, “Position Estimation of Solid Balls from
+Handy Camera for Pool Supporting System,” inProc. Pacific-Rim Symp.
+Image Video Technology (PSIVT), 2006.
+[8] H. Uchiyama and H. Saito, “AR Supporting System for Pool
+Games Using a Camera-Mounted Handheld Display,”Advances in
+Human-Computer Interaction, vol. 2008, Art. no. 357270, 2008, doi:
+10.1155/2008/357270.
+[9] Z. Zhang, W. Zhang, and W. Chen, “Design of Intelligent Assistant
+System for Billiards Hit Training,”Journal of Physics: Conference
+Series, vol. 1802, no. 3, Art. no. 032117, 2021, doi: 10.1088/1742-
+6596/1802/3/032117.
+[10] J.-K. Park and J. Park, “Intelligent Carom Billiards Assistive System
+for Automatic Solution Path Generation and Actual Path Prediction
+With Principal Component Analysis-Based Ball Motion Detection,”
+International Journal of Advanced Robotic Systems, vol. 19, no. 4, 2022,
+doi: 10.1177/17298806221118865.
+[11] B. Yang and W. Q. Yan, “Real-Time Billiard Shot Stability Detection
+Based on YOLOv8,” inIntelligent Computing, Springer, 2024.
+[12] B. Yang, “Scene Understanding for Billiard Ball Striking System,”
+M.C.I.S. thesis, Auckland Univ. Technol., Auckland, New Zealand,
+2023.
+[13] I. Silva, R. Chavez, J. L. Castillo-Sequera, and L. Wong, “System
+for Table Run Strategy in Peruvian Billiards with Real-Time Object
+Detection Using YOLOv8n,” inProc. Int. Conf. Optimization and
+Applications (ICOA), 2024.

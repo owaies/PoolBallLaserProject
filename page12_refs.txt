@@ -1,0 +1,86 @@
+[14] T. Nierhoff, K. Heunisch, and S. Hirche, “Strategic Play for a Pool-
+Playing Robot,” inProc. IEEE Int. Conf. Robotics and Automation
+(ICRA), 2016.
+[15] F. Long, J. Herland, M.-C. Tessier, D. Naulls, A. Roth, G. Roth, and
+M. Greenspan, “Robotic Pool: An Experiment in Automatic Potting,”
+inProc. IEEE/RSJ Int. Conf. Intelligent Robots and Systems (IROS),
+Sendai, Japan, 2004.
+[16] T. Nierhoff, K. Leibrandt, T. Lorenz, and S. Hirche, “Robotic Billiards:
+Understanding Humans in Order to Counter Them,”IEEE Transac-
+tions on Cybernetics, vol. 46, no. 6, pp. 1341–1352, Jun. 2016, doi:
+10.1109/TCYB.2015.2457404.
+[17] J. K. Odira, N. Andreff, L. Petiet, and J. B. Byiringiro, “Visual servoing
+of a laser beam through a mirror,”Robotica, vol. 40, pp. 3157–3177,
+2022, doi: 10.1017/S026357472200011X.
+[18] Y . Liu, N. Xi, and Y . Shen, “High-Accuracy Positioning of an Industrial
+Robot Using Image/PSD-Based Hybrid Servo Control,”International
+Journal of Optomechatronics, vol. 5, no. 2, pp. 170–187, 2011, doi:
+10.1080/15599612.2011.581742.
+[19] Z. Zhang, “A Flexible New Technique for Camera Calibration,” Mi-
+crosoft Research, Redmond, W A, USA, Tech. Rep. MSR-TR-98-71,
+Dec. 1998.
+[20] F. J. Rodriguez-Lozano, J. C. Gamez-Granados, H. Mart ´ınez, J. M.
+Palomares, and J. Olivares, “3D Reconstruction System and Multiobject
+Local Tracking Algorithm Designed for Billiards,”Applied Intelligence,
+vol. 53, pp. 21543–21575, 2023, doi: 10.1007/s10489-023-04542-3.
+[21] H.-C. Kim, “Motions of a Billiard Ball After a Cue Stroke,”
+arXiv:2104.11232, 2021.
+[22] Y . Chen and Y . Li, “Macro and Micro Reinforcement Learning for
+Playing Nine-ball Pool,” inProc. IEEE Conf., 2021.
+[23] A. Zheng and W. Q. Yan, “Attention-Pool: 9-Ball Game Video Ana-
+lytics with Object Attention and Temporal Context Gated Attention,”
+Computers, vol. 14, no. 9, Art. no. 352, 2025.
+[24] E. Kiefl, “Pooltool: A Python Package for Realistic Billiards Simula-
+tion,”Journal of Open Source Software, vol. 9, no. 101, p. 7301, Sep.
+2024, doi: 10.21105/joss.07301.
+[25] T. Jebara, C. Eyster, J. Weaver, T. Starner, and A. Pentland, “Stocha-
+sticks: Augmenting the Billiards Experience with Probabilistic Vision
+and Wearable Computers,” inProc. IEEE Int. Symp. Wearable Comput-
+ers (ISWC), Cambridge, MA, USA, 1997.
+[26] S.-W. Kang and K.-S. Choi, “Augmented Reality-based Billiards Train-
+ing System,”Journal of Practical Engineering Education, vol. 12, no.
+2, pp. 309–319, 2020, doi: 10.14702/JPEE.2020.309.
+[27] A. Gabdulkhakova and W. G. Kropatsch, “Video Analysis of a Snooker
+Footage Based on a Kinematic Model,” inLecture Notes in Computer
+Science, vol. 8621, Springer, 2014, pp. 223–232.
+[28] “Real-time Ball Detection and Tracking Using Raspberry PI,”INTEK
+Jurnal Penelitian, vol. 10, no. 1, pp. 48–54, Apr. 2023, doi: 10.31963/in-
+tek.v10i1.4301.
+[29] K. He, G. Gkioxari, P. Doll ´ar, and R. Girshick, “Mask R-CNN,” inProc.
+IEEE Int. Conf. Computer Vision (ICCV), Venice, Italy, Oct. 2017, pp.
+2961–2969.
+[30] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional Net-
+works for Biomedical Image Segmentation,” inMedical Image Com-
+puting and Computer-Assisted Intervention (MICCAI), Lecture Notes in
+Computer Science, vol. 9351, Springer, 2015, pp. 234–241.
+[31] J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, “You Only Look
+Once: Unified, Real-Time Object Detection,” inProc. IEEE Conf.
+Computer Vision and Pattern Recognition (CVPR), Las Vegas, NV , USA,
+Jun. 2016, pp. 779–788.
+[32] J. Redmon and A. Farhadi, “YOLO9000: Better, Faster, Stronger,” in
+Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR),
+Honolulu, HI, USA, Jul. 2017, pp. 7263–7271.
+[33] S. Ren, K. He, R. Girshick, and J. Sun, “Faster R-CNN: Towards
+Real-Time Object Detection with Region Proposal Networks,”IEEE
+Transactions on Pattern Analysis and Machine Intelligence, vol. 39, no.
+6, pp. 1137–1149, Jun. 2017.
+[34] W. Liu et al., “SSD: Single Shot MultiBox Detector,” inComputer Vision
+– ECCV 2016, Lecture Notes in Computer Science, vol. 9905, Springer,
+2016, pp. 21–37.
+[35] X. Zhou, D. Wang, and P. Kr ¨ahenb¨uhl, “Objects as Points,”
+arXiv:1904.07850, 2019.
+[36] Y . Xiang, T. Schmidt, V . Narayanan, and D. Fox, “PoseCNN: A Con-
+volutional Neural Network for 6D Object Pose Estimation in Cluttered
+Scenes,” inRobotics: Science and Systems (RSS), 2018.
+[37] R. Mur-Artal and J. D. Tard ´os, “ORB-SLAM2: An Open-Source SLAM
+System for Monocular, Stereo, and RGB-D Cameras,”IEEE Transac-
+tions on Robotics, vol. 33, no. 5, pp. 1255–1262, Oct. 2017.
+[38] K. He, X. Zhang, S. Ren, and J. Sun, “Deep Residual Learning for
+Image Recognition,” inProc. IEEE Conf. Computer Vision and Pattern
+Recognition (CVPR), Las Vegas, NV , USA, 2016, pp. 770–778.
+[39] F. Chaumette and S. Hutchinson, “Visual Servo Control, Part I: Basic
+Approaches,”IEEE Robotics & Automation Magazine, vol. 13, no. 4,
+pp. 82–90, Dec. 2006.
+[40] C. Moreira, L. Ferreira, and P. J. Coelho, “A Comprehensive Review of
+Ball Detection Techniques in Sports,”PeerJ Computer Science, vol. 11,
+p. e3079, 2025, doi: 10.7717/peerj-cs.3079.

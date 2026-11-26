@@ -1,0 +1,31 @@
+game_id: snooker
+game_name: Snooker
+display_name: Snooker
+icon: "\U0001F534"
+description: Snooker YOLOv8 model trained on 6,000+ images (99.0% mAP50).
+model_path: models/snooker/best.pt
+model_version: v3.0.0
+default_confidence: 0.4
+default_iou: 0.45
+table:
+  width_mm: 3569
+  height_mm: 1778
+camera:
+  calibration_file: calibration/camera_params_snooker.npy
+mapping:
+  homography_file: calibration/homography_snooker.npy
+laser:
+  x_offset: 0.0
+  y_offset: 0.0
+  servo_limits:
+  - 0
+  - 180
+classes:
+  0: black-ball
+  1: blue-ball
+  2: brown-ball
+  3: green-ball
+  4: pink-ball
+  5: red-ball
+  6: white-ball
+  7: yellow-ball

@@ -1,0 +1,33 @@
+\chapter{CONCLUSION AND FUTURE ENHANCEMENTS}
+
+\section{Conclusion}
+This project presented the design, mathematical formulation, hardware fabrication, and software realization of an end-to-end \textbf{AI-Based Snooker Ball Identification and Laser Positioning System}. Tailored specifically to resolve the contentious ball restoration problem under WPBSA Rule 14 (\textit{``Foul and a Miss''}), the system replaces subjective human visual estimation with geometric precision and physical optical guidance directly onto the playing baize.
+
+By integrating an overhead PVC gantry ($1315.15\,\text{mm}$ clearance) above an institutional $1168.4\,\text{mm} \times 2341.88\,\text{mm}$ snooker table, a fine-tuned YOLOv8s detector ($94.6\%$ $\text{mAP}_{0.5}$), SVD-based planar homography with spherical elevation parallax compensation ($1.82\,\text{mm}$ mean error), 2D bivariate cubic spline servo calibration ($\pm 2.18\,\text{mm}$ laser repeatability), an autonomous Hungarian bipartite referee engine ($306.6\,\text{ms}$ latency), and an ESP32-driven dual-MG996R pan-tilt laser gimbal, the system demonstrates that automated sports officiating can be achieved affordably (under INR 22,000), non-invasively, and reliably.
+
+\section{Objectives Achieved}
+All three primary project objectives defined in Chapter 1 were successfully realized and experimentally validated:
+\begin{enumerate}
+    \item[\textbf{O1.}] \textbf{Ball Detection:} Trained and deployed YOLOv8s on the overhead camera feed mounted on the $1315.15\,\text{mm}$ PVC gantry, achieving $94.6\%$ $\text{mAP}_{0.5}$ at $16.8\,\text{ms}$ GPU inference latency across active ball classes (White, Orange, Yellow, Green, Blue, Pink), paired with SVD planar homography and spherical elevation parallax correction ($\gamma = 0.98004$) that reduced metric localization error by $80.8\%$ (from $9.49\,\text{mm}$ to $1.82\,\text{mm}$).
+    \item[\textbf{O2.}] \textbf{Ball Tracking:} Implemented continuous optical frame-differencing motion tracking ($\Delta I_t$), $2.5\,\text{s}$ settlement verification, and Hungarian bipartite spatial assignment to lock pre-shot baselines and accurately classify stationary, displaced, and potted balls across standard miss, cluster scatter, accidental pocketing, and clean-shot scenarios.
+    \item[\textbf{O3.}] \textbf{Foul Restoration using Laser Pointing:} Engineered ESP32 Station Mode firmware (`10.21.46.190`) driving dual TowerPro MG996R servos on aluminum pan-tilt brackets via a regulated $6.0\,\text{V}$ DC-DC buck bus and an IRFZ44N MOSFET-switched $650\,\text{nm}$ $5\,\text{mW}$ laser diode, calibrated with a 9-point 2D bivariate cubic spline ($\pm 2.18\,\text{mm}$ targeting repeatability) and controlled through a Flask and Three.js 3D digital twin UI.
+\end{enumerate}
+
+\section{Limitations}
+Despite successful experimental validation, four operational limitations remain:
+\begin{itemize}
+    \item \textbf{Ball Set Simplification:} Prototype trials substituted high-visibility orange balls for dark red balls and excluded brown and black balls. Full tournament conditions with 15 dark red balls require enhanced photometric normalization to separate dark red and brown hues.
+    \item \textbf{Single-Spot Sequential Actuation:} The dual-servo gimbal steers a single laser diode, requiring displaced balls to be restored sequentially one at a time rather than projecting multiple simultaneous markers.
+    \item \textbf{Ambient Lighting Sensitivity:} Strong external sunlight glare or uneven ambient indoor reflections can occasionally introduce minor bounding-box jitter.
+    \item \textbf{Mechanical Servo Wear:} Prolonged rapid slewing induces gradual mechanical play in geared pan-tilt linkages, requiring periodic 9-point spline re-calibration.
+\end{itemize}
+
+\section{Future Enhancements}
+Building upon this cyber-physical foundation, future enhancements include:
+\begin{enumerate}
+    \item \textbf{Full 22-Ball Championship Deployment:} Fine-tuning YOLOv8 on full championship snooker datasets with CIE $L^*a^*b^*$ illumination normalization to reliably distinguish all 15 dark reds, brown, and black balls.
+    \item \textbf{High-Speed Galvanometer Laser Projection:} Upgrading the servo gimbal to a dual-galvanometer mirror scanner ($>1000^\circ/\text{s}$) capable of persistence-of-vision vector projection, simultaneously outlining multiple ball rings and shot trajectories.
+    \item \textbf{Stereo Depth Sensing:} Integrating RGB-D depth cameras to capture real-time 3D table point clouds, automating corner calibration and compensating dynamically for gantry vibration.
+    \item \textbf{Augmented Reality (AR) Referee Visors:} Streaming live restoration coordinates to lightweight AR smart glasses worn by match officials, overlaying holographic ghost balls directly onto the baize.
+    \item \textbf{Autonomous Cue-Training Integration:} Coupling the perception and trajectory engine with a coaching analytics dashboard to provide automated shot-angle and cue-alignment feedback for players.
+\end{enumerate}

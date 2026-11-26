@@ -1,0 +1,249 @@
+\chapter{SYSTEM DESIGN AND MATHEMATICAL FORMULATION}
+
+\section{Planar Projective Homography Formulation}
+Accurate spatial restoration requires establishing a rigorous mathematical mapping between two-dimensional pixel coordinates $(u, v)$ on the digital camera image plane and real-world metric coordinates $(X_w, Y_w)$ on the playing surface of the snooker table \cite{ref19}.
+
+\subsection{Projective Homography Mapping}
+Let $\mathbf{x} = [u, v, 1]^T$ denote the homogeneous coordinate vector of a point on the image sensor, and let $\mathbf{X}_w = [X_w, Y_w, 1]^T$ represent the corresponding homogeneous metric coordinate on the planar table surface ($Z_w = 0$). Under pinhole camera geometry, the coplanar projective mapping is governed by an invertible $3 \times 3$ homography matrix $\mathbf{H} \in \mathbb{R}^{3 \times 3}$:
+\begin{equation}
+    s \, \mathbf{x} = \mathbf{H} \, \mathbf{X}_w
+    \label{eq:homography_forward}
+\end{equation}
+where $s \in \mathbb{R}$ is an arbitrary non-zero projective scale factor, and $\mathbf{H}$ is expressed as:
+\begin{equation}
+    \mathbf{H} = \begin{bmatrix}
+        h_{11} & h_{12} & h_{13} \\
+        h_{21} & h_{22} & h_{23} \\
+        h_{31} & h_{32} & h_{33}
+    \end{bmatrix}
+    \label{eq:h_matrix}
+\end{equation}
+
+Since homography is defined up to an arbitrary scale, the matrix has eight independent degrees of freedom. Expanding Equation (\ref{eq:homography_forward}) yields the standard non-homogeneous projection equations:
+\begin{equation}
+    u = \frac{h_{11} X_w + h_{12} Y_w + h_{13}}{h_{31} X_w + h_{32} Y_w + h_{33}}, \quad
+    v = \frac{h_{21} X_w + h_{22} Y_w + h_{23}}{h_{31} X_w + h_{32} Y_w + h_{33}}
+    \label{eq:expanded_uv}
+\end{equation}
+
+Conversely, to map detected image pixel positions $(u, v)$ back into physical table coordinates $(X_w, Y_w)$ in millimeters, the inverse homography transformation is applied:
+\begin{equation}
+    \mathbf{X}_w = \mathbf{H}^{-1} \, \mathbf{x}
+    \label{eq:inverse_homography}
+\end{equation}
+yielding the metric Cartesian coordinates:
+\begin{equation}
+    X_w = \frac{h'_{11} u + h'_{12} v + h'_{13}}{h'_{31} u + h'_{32} v + h'_{33}}, \quad
+    Y_w = \frac{h'_{21} u + h'_{22} v + h'_{23}}{h'_{31} u + h'_{32} v + h'_{33}}
+    \label{eq:metric_xy}
+\end{equation}
+where $h'_{ij}$ denotes the elements of $\mathbf{H}^{-1}$.
+
+\subsection{Direct Linear Transformation (DLT) via SVD}
+To compute $\mathbf{H}$, at least four non-collinear point correspondences $\{ (u_i, v_i) \leftrightarrow (X_{w,i}, Y_{w,i}) \}_{i=1}^N$ ($N \ge 4$) are required. In our setup, the four outer corner pocket centers define the world coordinates:
+\begin{align}
+    \mathbf{X}_{w,1} &= [0, 0, 1]^T \quad &\text{(Top-Right / Home Pocket)} \nonumber \\
+    \mathbf{X}_{w,2} &= [W_{\text{table}}, 0, 1]^T \quad &\text{(Top-Left Pocket)} \nonumber \\
+    \mathbf{X}_{w,3} &= [W_{\text{table}}, L_{\text{table}}, 1]^T \quad &\text{(Bottom-Left Pocket)} \nonumber \\
+    \mathbf{X}_{w,4} &= [0, L_{\text{table}}, 1]^T \quad &\text{(Bottom-Right Pocket)}
+\end{align}
+where $W_{\text{table}} = 1168.4\,\text{mm}$ and $L_{\text{table}} = 2341.88\,\text{mm}$.
+
+Each point correspondence generates two linearly independent constraint equations:
+\begin{align}
+    X_{w,i} h_{11} + Y_{w,i} h_{12} + h_{13} - u_i X_{w,i} h_{31} - u_i Y_{w,i} h_{32} - u_i h_{33} &= 0 \nonumber \\
+    X_{w,i} h_{21} + Y_{w,i} h_{22} + h_{23} - v_i X_{w,i} h_{31} - v_i Y_{w,i} h_{32} - v_i h_{33} &= 0
+\end{align}
+
+Stacking these equations for $N=4$ correspondences forms a homogeneous linear system:
+\begin{equation}
+    \mathbf{A} \, \mathbf{h} = \mathbf{0}
+    \label{eq:Ah_zero}
+\end{equation}
+where $\mathbf{A} \in \mathbb{R}^{2N \times 9}$ and $\mathbf{h} = [h_{11}, h_{12}, \dots, h_{33}]^T$. Equation (\ref{eq:Ah_zero}) is solved by computing the Singular Value Decomposition (SVD) of matrix $\mathbf{A}$:
+\begin{equation}
+    \mathbf{A} = \mathbf{U} \, \mathbf{\Sigma} \, \mathbf{V}^T
+\end{equation}
+The optimal solution $\mathbf{h}^*$ corresponds to the right singular vector in $\mathbf{V}$ associated with the smallest singular value in $\mathbf{\Sigma}$.
+
+\section{Lens Distortion and Spherical Elevation Parallax Correction}
+
+\subsection{Radial and Tangential Lens Distortion}
+Standard wide-angle camera lenses introduce radial and tangential barrel distortions. Prior to homography mapping, pixel coordinates $(u, v)$ are rectified using Brown-Conrady lens distortion parameters \cite{ref35}:
+\begin{align}
+    x_n &= \frac{u - c_x}{f_x}, \quad y_n = \frac{v - c_y}{f_y} \\
+    r^2 &= x_n^2 + y_n^2 \\
+    x'' &= x_n (1 + k_1 r^2 + k_2 r^4) + 2 p_1 x_n y_n + p_2 (r^2 + 2 x_n^2) \\
+    y'' &= y_n (1 + k_1 r^2 + k_2 r^4) + p_1 (r^2 + 2 y_n^2) + 2 p_2 x_n y_n
+\end{align}
+where $(c_x, c_y)$ is the principal point, $(f_x, f_y)$ are focal lengths, $k_1, k_2$ are radial coefficients, and $p_1, p_2$ are tangential coefficients.
+
+\subsection{Spherical Elevation Parallax Compensation}
+A critical source of systematic error overlooked in prior billiards literature \cite{ref1, ref2, ref7} is \textit{elevation parallax}. Standard homography assumes all tracked features reside on the flat table bed ($Z_w = 0$). However, snooker balls are three-dimensional spheres with diameter $D = 52.5\,\text{mm}$. When viewed from above, the camera visual detector localizes the \textit{apparent visual centroid} of the sphere, which floats at an elevation of $Z_{\text{ball}} = R = 26.25\,\text{mm}$ above the baize cloth.
+
+Figure \ref{fig:elevation_parallax} depicts the geometric ray propagation from the overhead optical center $(X_c, Y_c, H_{\text{cam}})$ through the elevated ball center $(X_{\text{true}}, Y_{\text{true}}, R)$ down to its projected intersection $(X_{\text{obs}}, Y_{\text{obs}}, 0)$ on the table bed.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+    % Axes and lines
+    \draw[thick, ->] (0,0) -- (10,0) node[right] {$X_w$ (Table Cloth, $Z_w=0$)};
+    \draw[thick, ->] (0,0) -- (0,5.5) node[above] {$Z_w$ (Elevation)};
+    
+    % Camera
+    \node[draw, fill=blue!20, circle, inner sep=2pt] (cam) at (5, 5) {};
+    \node[above] at (cam) {Camera Center $(X_c, H_{\text{cam}})$};
+    
+    % True Ball
+    \draw[fill=orange!40, thick] (2, 1.0) circle (0.8);
+    \node[fill=black, circle, inner sep=1.5pt] (ball_center) at (2, 1.0) {};
+    \node[left] at (ball_center) {Ball Center $(X_{\text{true}}, R)$};
+    
+    % Cloth Contact Patch
+    \node[fill=red, circle, inner sep=1.5pt] (cloth_patch) at (2, 0) {};
+    \node[below] at (cloth_patch) {Actual Contact Point $(X_{\text{true}}, 0)$};
+    \draw[dashed, red, thick] (ball_center) -- (cloth_patch);
+    
+    % Optical Sightline Ray
+    \draw[thick, blue, -{Latex[length=2.5mm]}] (cam) -- (ball_center);
+    \draw[dashed, blue, thick] (ball_center) -- (0.8, 0) node[fill=blue!80, circle, inner sep=1.5pt] (obs) {};
+    \node[below, blue!90!black] at (obs) {Observed Contact $(X_{\text{obs}}, 0)$};
+    
+    % Parallax error dimension
+    \draw[<->, thick, purple] (0.8, -0.6) -- (2.0, -0.6);
+    \node[below, purple] at (1.4, -0.6) {Parallax Error $\Delta X$};
+    
+    % Heights
+    \draw[<->, dashed] (9, 0) -- (9, 5) node[midway, right] {$H_{\text{cam}} = 1315.15\,\text{mm}$};
+    \draw[<->, dashed] (3.5, 0) -- (3.5, 1.0) node[midway, right] {$R = 26.25\,\text{mm}$};
+\end{tikzpicture}
+\caption{Geometric Derivation of Spherical Elevation Parallax Shift}
+\label{fig:elevation_parallax}
+\end{figure}
+
+Applying similar triangles between the camera optical center $(X_c, Y_c, H_{\text{cam}})$ and the elevated sphere center $(X_{\text{true}}, Y_{\text{true}}, R)$:
+\begin{equation}
+    \frac{X_{\text{obs}} - X_c}{H_{\text{cam}}} = \frac{X_{\text{obs}} - X_{\text{true}}}{R}
+\end{equation}
+Rearranging to solve for the true physical contact coordinate on the cloth:
+\begin{align}
+    X_{\text{true}} &= X_c + (X_{\text{obs}} - X_c) \left( 1 - \frac{R}{H_{\text{cam}}} \right) \label{eq:parallax_x} \\
+    Y_{\text{true}} &= Y_c + (Y_{\text{obs}} - Y_c) \left( 1 - \frac{R}{H_{\text{cam}}} \right) \label{eq:parallax_y}
+\end{align}
+
+With our gantry height $H_{\text{cam}} = 1315.15\,\text{mm}$ and ball radius $R = 26.25\,\text{mm}$, the radial correction scaling ratio is:
+\begin{equation}
+    \gamma = 1 - \frac{26.25}{1315.15} \approx 0.98004
+\end{equation}
+Near table corners, where the horizontal offset $|X_{\text{obs}} - X_c| \approx 600\,\text{mm}$, uncompensated parallax introduces a severe spatial offset:
+\begin{equation}
+    \Delta X = (1 - \gamma) |X_{\text{obs}} - X_c| = 0.01996 \times 600\,\text{mm} \approx 12.0\,\text{mm}
+\end{equation}
+Applying Equations (\ref{eq:parallax_x}) and (\ref{eq:parallax_y}) completely neutralizes this systematic error.
+
+\section{Kinematic Modeling of the Dual-Axis Laser Gimbal}
+The physical optical pointer comprises a $650\,\text{nm}$ red laser diode mounted atop a two-degree-of-freedom (2-DOF) revolute pan-tilt gimbal located at the top-right corner of the table rig $(X_0, Y_0, Z_0) = (0, 0, H_{\text{gimbal}})$.
+
+\subsection{Theoretical Inverse Kinematics}
+In an ideal geometric coordinate frame, targeting a point $\mathbf{P} = (X_w, Y_w, 0)$ on the table cloth requires rotating the pan servo by azimuth angle $\theta_{\text{pan}}$ and the tilt servo by elevation angle $\phi_{\text{tilt}}$:
+\begin{align}
+    \theta_{\text{pan}}^{\text{ideal}} &= \arctan2(Y_w - Y_0, \, X_w - X_0) \label{eq:pan_ideal} \\
+    \phi_{\text{tilt}}^{\text{ideal}} &= \arctan2\left( \sqrt{(X_w - X_0)^2 + (Y_w - Y_0)^2}, \, Z_0 \right) \label{eq:tilt_ideal}
+\end{align}
+
+\subsection{Mechanical Non-Linearities and Spline Rationale}
+In practical implementation, theoretical inverse kinematics fails to achieve millimeter accuracy. Low-cost micro-servos (SG90/MG996R) suffer from:
+\begin{itemize}
+    \item Non-linear internal feedback potentiometer curves.
+    \item Structural servo horn mounting angular offsets ($\pm 3^\circ$ to $\pm 8^\circ$).
+    \item Gear train deadbands and mechanical backlash.
+    \item Cantilevered laser diode gravity droop as the tilt arm extends.
+\end{itemize}
+
+Linear trigonometric equations frequently produce targeting errors exceeding $\pm 25\,\text{mm}$ at the far end of the table. To achieve high precision, an empirical 2D Bivariate Cubic Spline calibration model was formulated.
+
+\section{2D Bivariate Cubic Spline Empirical Calibration}
+To compensate for all physical non-linearities simultaneously, the snooker table is discretized into a 9-point calibration grid corresponding to critical tournament fiducials:
+\begin{enumerate}
+    \item $P_1$: Top-Right Pocket (Home) $(0, 0)$
+    \item $P_2$: Top-Center Cushion $(W/2, 0)$
+    \item $P_3$: Top-Left Pocket $(W, 0)$
+    \item $P_4$: Mid-Right Pocket $(0, L/2)$
+    \item $P_5$: Table Center Node $(W/2, L/2)$
+    \item $P_6$: Mid-Left Pocket $(W, L/2)$
+    \item $P_7$: Bottom-Right Pocket $(0, L)$
+    \item $P_8$: Bottom-Center Cushion $(W/2, L)$
+    \item $P_9$: Bottom-Left Pocket $(W, L)$
+\end{enumerate}
+
+During initial calibration, the human operator uses the web interface nudge controls to align the physical laser beam with each of the nine targets, recording the ground-truth servo angles $\{ (\theta_k, \phi_k) \}_{k=1}^9$. 
+
+Using these nine control knots, two independent 2D bivariate spline smoothing functions $S_{\text{pan}}(X_w, Y_w)$ and $S_{\text{tilt}}(X_w, Y_w)$ are constructed:
+\begin{align}
+    \theta_{\text{pan}}(X_w, Y_w) &= \sum_{i=1}^m \sum_{j=1}^n c_{ij}^{\text{pan}} \, B_i(X_w) \, B_j(Y_w) \label{eq:spline_pan} \\
+    \phi_{\text{tilt}}(X_w, Y_w) &= \sum_{i=1}^m \sum_{j=1}^n c_{ij}^{\text{tilt}} \, B_i(X_w) \, B_j(Y_w) \label{eq:spline_tilt}
+\end{align}
+where $B_i(X)$ and $B_j(Y)$ are cubic B-spline basis functions, and $c_{ij}$ are optimal spline coefficients computed by minimizing the penalized sum of squares:
+\begin{equation}
+    E(S) = \sum_{k=1}^9 \left[ S(X_k, Y_k) - \theta_k \right]^2 + \lambda \iint \left( \frac{\partial^2 S}{\partial X^2} + 2 \frac{\partial^2 S}{\partial X \partial Y} + \frac{\partial^2 S}{\partial Y^2} \right) dX dY
+\end{equation}
+Continuous evaluation of Equations (\ref{eq:spline_pan}) and (\ref{eq:spline_tilt}) allows the system to interpolate servo angles smoothly across any coordinate on the $1168.4 \times 2341.88\,\text{mm}$ table with an empirical accuracy of $\pm 2.4\,\text{mm}$.
+
+\section{Bipartite Matching for Ball State Differencing}
+Following stroke execution, the autonomous referee engine must identify which balls moved, which remained undisturbed, and which were potted.
+
+Let $\mathcal{S}_{\text{pre}} = \{ \mathbf{p}_i^{\text{pre}} \}_{i=1}^{N}$ represent the set of ball coordinates recorded prior to the stroke, and let $\mathcal{S}_{\text{post}} = \{ \mathbf{p}_j^{\text{post}} \}_{j=1}^{M}$ denote the detected post-shot ball positions. Because fifteen object balls are identical orange spheres, simple class-based matching cannot track individual identity. 
+
+A bipartite cost matrix $\mathbf{C} \in \mathbb{R}^{N \times M}$ is constructed where each element represents the 2D Euclidean distance:
+\begin{equation}
+    C_{ij} = \| \mathbf{p}_i^{\text{pre}} - \mathbf{p}_j^{\text{post}} \|_2 = \sqrt{(X_i^{\text{pre}} - X_j^{\text{post}})^2 + (Y_i^{\text{pre}} - Y_j^{\text{post}})^2}
+\end{equation}
+with the constraint that $C_{ij} = \infty$ if the detected class of ball $i$ does not match ball $j$.
+
+The optimal one-to-one spatial assignment is solved using the Hungarian Assignment Algorithm \cite{ref40}:
+\begin{equation}
+    \min_{\mathbf{X}} \sum_{i=1}^N \sum_{j=1}^M C_{ij} X_{ij} \quad \text{subject to} \quad \sum_{j=1}^M X_{ij} \le 1, \; \sum_{i=1}^N X_{ij} \le 1, \; X_{ij} \in \{0, 1\}
+\end{equation}
+
+For each matched pair $(i, j)$:
+\begin{itemize}
+    \item If $C_{ij} \le \tau_{\text{stationary}} = 10.0\,\text{mm}$, ball $i$ is classified as \textbf{Stationary}.
+    \item If $C_{ij} > \tau_{\text{stationary}}$, ball $i$ is classified as \textbf{Displaced}, with displacement vector $\mathbf{d}_i = \mathbf{p}_j^{\text{post}} - \mathbf{p}_i^{\text{pre}}$.
+\end{itemize}
+Any pre-shot ball $\mathbf{p}_i^{\text{pre}}$ with no valid post-shot match is classified as \textbf{Potted} (in-pocket).
+
+\section{Autonomous Referee State Machine}
+The referee system operates as a finite state machine (FSM) comprising five discrete states, illustrated in Figure \ref{fig:fsm_diagram}:
+\begin{itemize}
+    \item \textbf{State 0 (Idle / Armed):} Pre-shot baseline locked; video motion sensor continuously analyzes inter-frame optical change.
+    \item \textbf{State 1 (Stroke In-Progress):} Motion threshold ($\Delta I > 5.0\%$) exceeded; system suppresses detection while balls are in rapid motion.
+    \item \textbf{State 2 (Settlement Verification):} Motion drops below threshold; a 2.5-second settlement countdown timer ensures all spheres have come to complete rest.
+    \item \textbf{State 3 (State Diffing \& Foul Analysis):} High-resolution post-shot frame captured; YOLOv8s runs detection; bipartite matching isolates displaced balls.
+    \item \textbf{State 4 (Restoration Guidance):} In the event of a foul call, the referee selects displaced balls from the UI table; the steerable laser automatically aims at pre-shot coordinates $\mathbf{p}_i^{\text{pre}}$ to guide manual repositioning.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    state/.style={draw=blue!80, fill=blue!10, circle, thick, minimum size=2.0cm, align=center, font=\small},
+    line/.style={draw, -{Latex[length=2.5mm]}, thick}
+]
+
+\node[state] (s0) {State 0\\(Idle /\\Armed)};
+\node[state, right=2.0cm of s0] (s1) {State 1\\(Shot\\Motion)};
+\node[state, below=1.8cm of s1] (s2) {State 2\\(Settlement\\Timer)};
+\node[state, left=2.0cm of s2] (s3) {State 3\\(State\\Diffing)};
+\node[state, below=1.8cm of s3] (s4) {State 4\\(Laser\\Restoration)};
+
+\path[line] (s0) -- node[above, font=\scriptsize] {Motion $>5\%$} (s1);
+\path[line] (s1) -- node[right, font=\scriptsize] {Motion $<0.8\%$} (s2);
+\path[line] (s2) -- node[above, font=\scriptsize] {Stable for 2.5s} (s3);
+\path[line] (s3) -- node[left, font=\scriptsize] {Foul Called} (s4);
+\path[line] (s3) -- node[left, near end, font=\scriptsize] {No Foul (Clean Shot)} (s0);
+\path[line] (s4) -| node[below, near end, font=\scriptsize] {Restoration Done} (s0);
+
+\end{tikzpicture}
+\caption{Finite State Machine (FSM) Diagram of Autonomous Referee Workflow}
+\label{fig:fsm_diagram}
+\end{figure}

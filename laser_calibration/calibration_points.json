@@ -1,0 +1,94 @@
+{
+  "version": "1.0.0",
+  "description": "PoolBot Initial 9 Empirical Calibration Observations",
+  "created_at": "2026-11-01T19:00:00.000000",
+  "updated_at": "2026-11-01T19:00:00.000000",
+  "table_dimensions": {
+    "inner_length_mm": 2341.88,
+    "inner_breadth_mm": 1168.4,
+    "aspect_ratio": 2.0043478260869565
+  },
+  "nodes": [
+    {
+      "id": "node_tl",
+      "label": "Top-left",
+      "x_mm": 0.0,
+      "y_mm": 0.0,
+      "pan_deg": 129.0,
+      "tilt_deg": 61.0,
+      "notes": "Empirical initial sample at top-left corner"
+    },
+    {
+      "id": "node_tc",
+      "label": "Top-centre",
+      "x_mm": 1170.94,
+      "y_mm": 0.0,
+      "pan_deg": 109.0,
+      "tilt_deg": 81.0,
+      "notes": "Empirical initial sample at top-centre side"
+    },
+    {
+      "id": "node_tr",
+      "label": "Top-right",
+      "x_mm": 2341.88,
+      "y_mm": 0.0,
+      "pan_deg": 104.0,
+      "tilt_deg": 94.0,
+      "notes": "Empirical initial sample at top-right corner"
+    },
+    {
+      "id": "node_ml",
+      "label": "Middle-left",
+      "x_mm": 0.0,
+      "y_mm": 584.2,
+      "pan_deg": 154.0,
+      "tilt_deg": 70.0,
+      "notes": "Empirical initial sample at middle-left boundary"
+    },
+    {
+      "id": "node_c",
+      "label": "Centre",
+      "x_mm": 1170.94,
+      "y_mm": 584.2,
+      "pan_deg": 125.0,
+      "tilt_deg": 84.0,
+      "notes": "Empirical initial sample at table centre"
+    },
+    {
+      "id": "node_mr",
+      "label": "Middle-right",
+      "x_mm": 2341.88,
+      "y_mm": 584.2,
+      "pan_deg": 115.0,
+      "tilt_deg": 94.0,
+      "notes": "Empirical initial sample at middle-right boundary"
+    },
+    {
+      "id": "node_bl",
+      "label": "Bottom-left",
+      "x_mm": 0.0,
+      "y_mm": 1168.4,
+      "pan_deg": 167.0,
+      "tilt_deg": 79.0,
+      "notes": "Empirical initial sample at bottom-left corner"
+    },
+    {
+      "id": "node_bc",
+      "label": "Bottom-centre",
+      "x_mm": 1170.94,
+      "y_mm": 1168.4,
+      "pan_deg": 140.0,
+      "tilt_deg": 87.0,
+      "notes": "Empirical initial sample at bottom-centre side"
+    },
+    {
+      "id": "node_br",
+      "label": "Bottom-right",
+      "x_mm": 2341.88,
+      "y_mm": 1168.4,
+      "pan_deg": 125.0,
+      "tilt_deg": 94.0,
+      "notes": "Empirical initial sample at bottom-right corner"
+    }
+  ]
+}

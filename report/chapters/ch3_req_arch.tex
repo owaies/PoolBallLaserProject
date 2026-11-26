@@ -1,0 +1,243 @@
+\chapter{METHODOLOGY}
+
+\section{Requirement Analysis}
+To guarantee reliable cyber-physical officiating on a physical snooker table, the system requirements are categorized into functional capabilities and non-functional operational constraints.
+
+\subsection{Functional Requirements}
+\begin{itemize}
+    \item \textbf{FR-1 (Camera Stream Acquisition):} The system shall acquire top-down video frames from the overhead camera at a minimum resolution of $1280 \times 720$ at $\ge 15\,\text{FPS}$.
+    \item \textbf{FR-2 (Planar Table Calibration):} The system shall allow interactive or automatic selection of four corner table fiducials to calculate an invertible $3 \times 3$ planar homography matrix $\mathbf{H}$.
+    \item \textbf{FR-3 (Multi-Class Ball Detection):} The system shall detect, localize, and classify all visible spherical balls into their designated classes (White cue ball, Orange object balls, Yellow, Green, Blue, Pink) with a confidence threshold $\ge 0.50$.
+    \item \textbf{FR-4 (Metric Coordinate Transformation):} The system shall transform detected bounding-box coordinates $(u, v)$ into real-world table coordinates $(X_w, Y_w)$ in millimeters while compensating for spherical elevation parallax.
+    \item \textbf{FR-5 (Autonomous Motion Tracking):} The system shall monitor table activity in real-time, detecting the commencement of a stroke (motion trigger) and the cessation of all motion (settlement trigger).
+    \item \textbf{FR-6 (State Differencing and Foul Detection):} The system shall compare the post-shot table state against the pre-shot baseline, identifying displaced, disturbed, and pocketed balls using Euclidean distance bipartite matching.
+    \item \textbf{FR-7 (Laser Actuation and Steering):} The system shall transmit target angular commands $(\theta_{\text{pan}}, \phi_{\text{tilt}})$ to the ESP32 controller over HTTP REST, aiming the laser diode at the designated restoration coordinate.
+    \item \textbf{FR-8 (Interactive 3D Digital Twin):} The web interface shall visualize live ball coordinates on an interactive 3D Three.js table, enabling manual click-to-aim and live fine-tuning nudge adjustments.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{NFR-1 (Restoration Spatial Accuracy):} The overall laser targeting deviation relative to actual ball positions shall not exceed $\pm 3.0\,\text{mm}$ across the entire playing surface.
+    \item \textbf{NFR-2 (System Latency):} Total end-to-end processing latency---from motion cessation detection to physical laser positioning---shall not exceed $1.0\,\text{second}$.
+    \item \textbf{NFR-3 (Optical Safety):} The laser diode shall operate strictly at Class 2/IIIa low power levels ($\le 5\,\text{mW}$ red $650\,\text{nm}$) and shall feature an automatic software timeout ($120\,\text{s}$) and an emergency hardware cutoff button.
+    \item \textbf{NFR-4 (Offline Fault Resilience):} The system shall gracefully degrade when external network connections or phone camera streams are interrupted, booting with cached calibration frames without throwing unhandled runtime exceptions.
+    \item \textbf{NFR-5 (Non-Invasive Installation):} The gantry and camera sensors shall be completely external to the playing field, leaving the table cloth, cushions, and balls unaltered.
+    \item \textbf{NFR-6 (Cost Affordability):} The overall bill of materials shall remain below INR 25,000 to ensure economic accessibility for academic institutions and local recreational snooker clubs.
+\end{itemize}
+
+\section{System Design}
+
+\subsection{System Architecture}
+The proposed \textbf{AI-Based Snooker Ball Identification and Laser Positioning System} is designed as an end-to-end, distributed four-tier cyber-physical architecture:
+\begin{enumerate}
+    \item \textbf{Physical Table and Gantry Tier:} An institutional regulation snooker table ($1168.4\,\text{mm} \times 2341.88\,\text{mm}$) spanned by an overhead rigid PVC structural gantry ($1315.15\,\text{mm}$ clearance) hosting an overhead camera sensor and a steerable dual-servo laser diode.
+    \item \textbf{Embedded Actuation Tier:} An Espressif ESP32 Dev Kit 32-bit dual-core microcontroller running FreeRTOS firmware in dedicated Wi-Fi Station Mode (`10.21.46.190`), driving dual TowerPro MG996R metal-gear servos for Pan (GPIO 18) and Tilt (GPIO 19) angular articulation and a $650\,\text{nm}$ red laser diode switched via an IRFZ44N MOSFET (GPIO 23).
+    \item \textbf{Vision and Intelligent Processing Tier:} A local host computing node executing Python 3.10 with OpenCV 4.8 and Ultralytics YOLOv8s. This tier performs camera stream acquisition, 4-point planar homography rectification, spherical elevation parallax correction, multi-class ball detection, and autonomous temporal motion/referee state estimation.
+    \item \textbf{Presentation and Supervisory Control Tier:} A responsive web-based User Interface (UI) constructed with HTML5, CSS3, JavaScript, and Three.js WebGL, providing an interactive 3D digital twin, real-time ball positioning overlays, manual servo nudge controls, and an automated referee panel.
+\end{enumerate}
+
+Figure \ref{fig:system_architecture} illustrates the high-level operational block diagram and dataflow across the four architectural tiers.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.0cm,
+    block/.style={rectangle, draw=blue!70, fill=blue!5, thick, rounded corners, minimum height=1.0cm, minimum width=3.0cm, align=center, font=\small},
+    hwblock/.style={rectangle, draw=orange!80, fill=orange!10, thick, rounded corners, minimum height=1.0cm, minimum width=3.0cm, align=center, font=\small},
+    procblock/.style={rectangle, draw=green!70!black, fill=green!5, thick, rounded corners, minimum height=1.0cm, minimum width=3.2cm, align=center, font=\small},
+    uiblock/.style={rectangle, draw=purple!70, fill=purple!5, thick, rounded corners, minimum height=1.0cm, minimum width=3.0cm, align=center, font=\small},
+    line/.style={draw, -{Latex[length=2.5mm]}, thick}
+]
+
+% Nodes
+\node[hwblock] (camera) {Overhead Camera\\(1080p @ 30 FPS)};
+\node[block, right=of camera] (gantry) {PVC Overhead Gantry\\($1315\,\text{mm}$ height, camera mount)};
+\node[hwblock, below=of camera] (esp32) {ESP32 Controller\\(Station Mode, IP: 10.21.46.190)};
+\node[hwblock, below=of esp32] (actuator) {Pan-Tilt Gimbal + Laser\\(GPIO 18, 19, 23)};
+
+\node[procblock, right=2.2cm of gantry] (homography) {Perspective Rectification\\(Planar Homography $\mathbf{H}$)};
+\node[procblock, below=0.8cm of homography] (yolo) {YOLOv8s Ball Detection\\(6 Classes, Orange Set)};
+\node[procblock, below=0.8cm of yolo] (referee) {Autonomous Referee Engine\\(Motion \& Bipartite Match)};
+\node[procblock, below=0.8cm of referee] (spline) {2D Bivariate Spline Model\\(9-Point Grid Calibration)};
+
+\node[uiblock, right=2.2cm of homography] (flask) {Flask REST API Backend\\(\texttt{snooker\_web\_app.py})};
+\node[uiblock, below=1.2cm of flask] (ui) {Three.js 3D Digital Twin\\\& Referee UI Dashboard};
+
+% Connections
+\path[line] (camera) -- node[above, font=\scriptsize] {MJPEG Stream} (homography);
+\path[line] (homography) -- (yolo);
+\path[line] (yolo) -- (referee);
+\path[line] (referee) -- (spline);
+\path[line] (spline) -| node[above, near start, font=\scriptsize] {HTTP POST /move} (esp32);
+\path[line] (esp32) -- node[right, font=\scriptsize] {PWM \& GPIO} (actuator);
+\path[line] (yolo) -- (flask);
+\path[line] (referee) -- (flask);
+\path[line] (flask) -- node[right, font=\scriptsize] {WebSocket / REST} (ui);
+\path[line] (ui) |- node[below, near end, font=\scriptsize] {Nudge / Move Trigger} (spline);
+
+\end{tikzpicture}
+}
+\caption{System Architecture and Functional Dataflow Diagram}
+\label{fig:system_architecture}
+\end{figure}
+
+Communication between the host vision computer and the embedded ESP32 microcontroller is conducted over a local 802.11 b/g/n Wi-Fi wireless network using static IP `10.21.46.190`. Listing \ref{lst:rest_api} illustrates the JSON actuation payload format.
+
+\begin{lstlisting}[caption={ESP32 RESTful Actuation Command Payload}, label={lst:rest_api}]
+POST /move HTTP/1.1
+Host: 10.21.46.190
+Content-Type: application/json
+
+{
+  "pan": 35.0,
+  "tilt": 102.0,
+  "laser": true
+}
+\end{lstlisting}
+
+\section{Algorithms Used}
+
+\subsection{Algorithm 1: Planar Projective Homography via SVD}
+Accurate spatial restoration requires establishing a rigorous mathematical mapping between two-dimensional pixel coordinates $(u, v)$ on the camera image plane and real-world metric coordinates $(X_w, Y_w)$ on the snooker table \cite{ref19}. Let $\mathbf{x} = [u, v, 1]^T$ denote the homogeneous image coordinate vector and $\mathbf{X}_w = [X_w, Y_w, 1]^T$ represent the corresponding metric coordinate on the planar table surface ($Z_w = 0$). Under pinhole camera geometry, the projective mapping is governed by an invertible $3 \times 3$ homography matrix $\mathbf{H} \in \mathbb{R}^{3 \times 3}$:
+\begin{equation}
+    s \, \mathbf{x} = \mathbf{H} \, \mathbf{X}_w, \qquad
+    \mathbf{H} = \begin{bmatrix}
+        h_{11} & h_{12} & h_{13} \\
+        h_{21} & h_{22} & h_{23} \\
+        h_{31} & h_{32} & h_{33}
+    \end{bmatrix}
+    \label{eq:homography_forward}
+\end{equation}
+To map detected pixel positions $(u, v)$ into physical table coordinates $(X_w, Y_w)$ in millimeters, the inverse homography transformation is applied:
+\begin{equation}
+    \mathbf{X}_w = \mathbf{H}^{-1} \, \mathbf{x}, \qquad
+    X_w = \frac{h'_{11} u + h'_{12} v + h'_{13}}{h'_{31} u + h'_{32} v + h'_{33}}, \quad
+    Y_w = \frac{h'_{21} u + h'_{22} v + h'_{23}}{h'_{31} u + h'_{32} v + h'_{33}}
+    \label{eq:metric_xy}
+\end{equation}
+where $h'_{ij}$ denotes the elements of $\mathbf{H}^{-1}$. Using four outer corner pocket correspondences $\{ (u_i, v_i) \leftrightarrow (X_{w,i}, Y_{w,i}) \}_{i=1}^4$ with $W_{\text{table}} = 1168.4\,\text{mm}$ and $L_{\text{table}} = 2341.88\,\text{mm}$, Direct Linear Transformation (DLT) constructs a homogeneous system $\mathbf{A}\mathbf{h} = \mathbf{0}$ ($\mathbf{A} \in \mathbb{R}^{8 \times 9}$), solved via Singular Value Decomposition $\mathbf{A} = \mathbf{U}\mathbf{\Sigma}\mathbf{V}^T$, where $\mathbf{h}^*$ is the right singular vector corresponding to the smallest singular value. Prior to homography mapping, Brown-Conrady radial and tangential distortion parameters are rectified \cite{ref35}.
+
+\subsection{Algorithm 2: Spherical Elevation Parallax Compensation}
+Standard homography assumes all tracked features reside on the flat table bed ($Z_w = 0$). However, snooker balls are three-dimensional spheres of diameter $D = 52.5\,\text{mm}$, so the vision detector localizes the apparent visual centroid at elevation $Z_{\text{ball}} = R = 26.25\,\text{mm}$ above the cloth. Figure \ref{fig:elevation_parallax} depicts the geometric ray propagation from the overhead optical center $(X_c, Y_c, H_{\text{cam}})$ through the elevated ball center $(X_{\text{true}}, Y_{\text{true}}, R)$ to its projected intersection $(X_{\text{obs}}, Y_{\text{obs}}, 0)$.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.90]
+    \draw[thick, ->] (0,0) -- (10,0) node[right] {$X_w$ (Table Cloth, $Z_w=0$)};
+    \draw[thick, ->] (0,0) -- (0,5.5) node[above] {$Z_w$ (Elevation)};
+    \node[draw, fill=blue!20, circle, inner sep=2pt] (cam) at (5, 5) {};
+    \node[above] at (cam) {Camera Center $(X_c, H_{\text{cam}})$};
+    \draw[fill=orange!40, thick] (2, 1.0) circle (0.8);
+    \node[fill=black, circle, inner sep=1.5pt] (ball_center) at (2, 1.0) {};
+    \node[left] at (ball_center) {Ball Center $(X_{\text{true}}, R)$};
+    \node[fill=red, circle, inner sep=1.5pt] (cloth_patch) at (2, 0) {};
+    \node[below] at (cloth_patch) {Actual Contact Point $(X_{\text{true}}, 0)$};
+    \draw[dashed, red, thick] (ball_center) -- (cloth_patch);
+    \draw[thick, blue, -{Latex[length=2.5mm]}] (cam) -- (ball_center);
+    \draw[dashed, blue, thick] (ball_center) -- (0.8, 0) node[fill=blue!80, circle, inner sep=1.5pt] (obs) {};
+    \node[below, blue!90!black] at (obs) {Observed Contact $(X_{\text{obs}}, 0)$};
+    \draw[<->, thick, purple] (0.8, -0.6) -- (2.0, -0.6);
+    \node[below, purple] at (1.4, -0.6) {Parallax Error $\Delta X$};
+    \draw[<->, dashed] (9, 0) -- (9, 5) node[midway, right] {$H_{\text{cam}} = 1315.15\,\text{mm}$};
+    \draw[<->, dashed] (3.5, 0) -- (3.5, 1.0) node[midway, right] {$R = 26.25\,\text{mm}$};
+\end{tikzpicture}
+\caption{Geometric Derivation of Spherical Elevation Parallax Shift}
+\label{fig:elevation_parallax}
+\end{figure}
+
+Applying similar triangles yields the closed-form true cloth contact coordinates:
+\begin{align}
+    X_{\text{true}} &= X_c + (X_{\text{obs}} - X_c) \left( 1 - \frac{R}{H_{\text{cam}}} \right) \label{eq:parallax_x} \\
+    Y_{\text{true}} &= Y_c + (Y_{\text{obs}} - Y_c) \left( 1 - \frac{R}{H_{\text{cam}}} \right) \label{eq:parallax_y}
+\end{align}
+With $H_{\text{cam}} = 1315.15\,\text{mm}$ and $R = 26.25\,\text{mm}$, the scaling factor is $\gamma = 1 - 26.25/1315.15 \approx 0.98004$, neutralizing up to $\Delta X \approx 12.0\,\text{mm}$ of radial corner parallax.
+
+\subsection{Algorithm 3: Dual-Axis Inverse Kinematics and 2D Bivariate Cubic Spline Calibration}
+Targeting a point $\mathbf{P} = (X_w, Y_w, 0)$ from the top-right gimbal origin $(X_0, Y_0, Z_0) = (0, 0, H_{\text{gimbal}})$ yields ideal trigonometric inverse kinematics:
+\begin{align}
+    \theta_{\text{pan}}^{\text{ideal}} &= \arctan2(Y_w - Y_0, \, X_w - X_0) \label{eq:pan_ideal} \\
+    \phi_{\text{tilt}}^{\text{ideal}} &= \arctan2\left( \sqrt{(X_w - X_0)^2 + (Y_w - Y_0)^2}, \, Z_0 \right) \label{eq:tilt_ideal}
+\end{align}
+Because physical servos exhibit potentiometer non-linearities, horn mounting offsets, gear backlash, and gravity droop, theoretical equations produce errors exceeding $\pm 22\,\text{mm}$. To eliminate these non-linearities, the table is discretized into a 9-point spatial calibration grid ($P_1$ through $P_9$: pockets, cushion midpoints, and center node). Ground-truth servo angles $\{ (\theta_k, \phi_k) \}_{k=1}^9$ are recorded via live nudge controls, and two independent 2D bivariate cubic spline functions are fitted:
+\begin{align}
+    \theta_{\text{pan}}(X_w, Y_w) &= \sum_{i=1}^m \sum_{j=1}^n c_{ij}^{\text{pan}} \, B_i(X_w) \, B_j(Y_w) \label{eq:spline_pan} \\
+    \phi_{\text{tilt}}(X_w, Y_w) &= \sum_{i=1}^m \sum_{j=1}^n c_{ij}^{\text{tilt}} \, B_i(X_w) \, B_j(Y_w) \label{eq:spline_tilt}
+\end{align}
+where $B_i(X)$ and $B_j(Y)$ are cubic B-spline basis functions obtained by minimizing the penalized sum of squares, achieving $\pm 2.18\,\text{mm}$ mean laser repeatability.
+
+\subsection{Algorithm 4: Hungarian Bipartite Matching for Ball State Differencing}
+Because the fifteen orange object balls are visually identical, simple class-based tracking fails after multi-ball collisions. Let $\mathcal{S}_{\text{pre}} = \{ \mathbf{p}_i^{\text{pre}} \}_{i=1}^{N}$ and $\mathcal{S}_{\text{post}} = \{ \mathbf{p}_j^{\text{post}} \}_{j=1}^{M}$ denote pre-shot and post-shot coordinates. A cost matrix $\mathbf{C} \in \mathbb{R}^{N \times M}$ is built using Euclidean distances $C_{ij} = \| \mathbf{p}_i^{\text{pre}} - \mathbf{p}_j^{\text{post}} \|_2$ (with $C_{ij} = \infty$ across mismatched ball classes). The optimal one-to-one assignment is solved via the Hungarian Algorithm \cite{ref40}:
+\begin{equation}
+    \min_{\mathbf{X}} \sum_{i=1}^N \sum_{j=1}^M C_{ij} X_{ij} \quad \text{subject to} \quad \sum_{j=1}^M X_{ij} \le 1, \; \sum_{i=1}^N X_{ij} \le 1, \; X_{ij} \in \{0, 1\}
+\end{equation}
+Matched pairs with $C_{ij} \le \tau_{\text{stationary}} = 10.0\,\text{mm}$ are classified as \textbf{Stationary}; pairs with $C_{ij} > 10.0\,\text{mm}$ are flagged as \textbf{Displaced} ($\mathbf{d}_i = \mathbf{p}_j^{\text{post}} - \mathbf{p}_i^{\text{pre}}$); unmatched pre-shot balls are marked \textbf{Potted}.
+
+\subsection{Algorithm 5: Autonomous Referee Finite State Machine (FSM)}
+The autonomous referee operates as a five-state FSM (Figure \ref{fig:fsm_diagram}): \textbf{State 0 (Idle/Armed)} locks the pre-shot baseline; \textbf{State 1 (Shot Motion)} triggers when inter-frame motion exceeds $\Delta I > 5.0\%$; \textbf{State 2 (Settlement Timer)} enforces a $2.5\,\text{s}$ stability countdown once motion falls below $0.8\%$; \textbf{State 3 (State Diffing)} runs YOLOv8s and Hungarian matching; and \textbf{State 4 (Laser Restoration)} sequentially steers the laser diode to each displaced ball's $\mathbf{p}_i^{\text{pre}}$ coordinate upon a foul call.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    state/.style={draw=blue!80, fill=blue!10, circle, thick, minimum size=2.0cm, align=center, font=\small},
+    line/.style={draw, -{Latex[length=2.5mm]}, thick}
+]
+\node[state] (s0) {State 0\\(Idle /\\Armed)};
+\node[state, right=2.0cm of s0] (s1) {State 1\\(Shot\\Motion)};
+\node[state, below=1.8cm of s1] (s2) {State 2\\(Settlement\\Timer)};
+\node[state, left=2.0cm of s2] (s3) {State 3\\(State\\Diffing)};
+\node[state, below=1.8cm of s3] (s4) {State 4\\(Laser\\Restoration)};
+
+\path[line] (s0) -- node[above, font=\scriptsize] {Motion $>5\%$} (s1);
+\path[line] (s1) -- node[right, font=\scriptsize] {Motion $<0.8\%$} (s2);
+\path[line] (s2) -- node[above, font=\scriptsize] {Stable for 2.5s} (s3);
+\path[line] (s3) -- node[left, font=\scriptsize] {Foul Called} (s4);
+\path[line] (s3) -- node[left, near end, font=\scriptsize] {No Foul (Clean Shot)} (s0);
+\path[line] (s4) -| node[below, near end, font=\scriptsize] {Restoration Done} (s0);
+\end{tikzpicture}
+\caption{Finite State Machine (FSM) Diagram of Autonomous Referee Workflow}
+\label{fig:fsm_diagram}
+\end{figure}
+
+\section{Tools and Technologies}
+Table \ref{tab:hardware_bom} details the complete Hardware Bill of Materials (BOM) and approximate prototype expenditure in Indian Rupees (INR).
+
+\begin{table}[H]
+\centering
+\caption{Hardware Bill of Materials (BOM) and Cost Breakdown}
+\label{tab:hardware_bom}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|l|l|c|r|}
+\hline
+\textbf{Sl. No.} & \textbf{Component Name} & \textbf{Technical Specifications / Ratings} & \textbf{Qty} & \textbf{Cost (INR)} \\
+\hline
+1 & Custom Snooker Table & $1168.4\,\text{mm} \times 2341.88\,\text{mm}$, green tournament felt, 6 pockets & 1 & 12,500.00 \\
+2 & Overhead PVC Gantry & Class-B $1.0''$ Schedule 40 PVC pipes, 90$^\circ$ elbows, T-joints, height $1315.15\,\text{mm}$ & 1 Set & 1,850.00 \\
+3 & Overhead Camera Unit & Full HD 1080p CMOS sensor, wide-angle distortion-free lens, USB/Wi-Fi RTSP & 1 & 2,200.00 \\
+4 & ESP32 Dev Kit & 30-pin ESP-WROOM-32, Dual-Core 240MHz, 520KB SRAM, 802.11 b/g/n Wi-Fi & 1 & 550.00 \\
+5 & Pan-Tilt Metal Brackets & Heavy-duty black anodized aluminum 2-DOF pan-tilt servo bracket kit & 1 Set & 450.00 \\
+6 & Servos (Pan \& Tilt) & TowerPro MG996R high-torque metal gear servos ($11\,\text{kg}\cdot\text{cm}$ @ 6V, $180^\circ$) & 2 & 780.00 \\
+7 & Red Laser Diode & $650\,\text{nm}$, 5mW, operating voltage 3.0V--5.0V DC, focused dot brass casing & 1 & 120.00 \\
+8 & Power MOSFET Driver & IRFZ44N N-Channel Power MOSFET ($V_{DSS}=55\,\text{V}$, $I_D=49\,\text{A}$, $R_{DS(on)}=17.5\,\text{m}\Omega$) & 1 & 45.00 \\
+9 & Gate Pull-Down Resistor & $10\,\text{k}\Omega$ 1/4W $\pm 1\%$ Metal Film Resistor (MOSFET gate stabilization) & 1 & 5.00 \\
+10 & DC-DC Buck Converter & LM2596 / XL4015 step-down regulator (12V input, trimmer tuned to steady 6.0V output) & 1 & 180.00 \\
+11 & Main Power Supply & 12V 5A (60 Watts) regulated switch-mode DC adapter, 2.1mm $\times$ 5.5mm jack & 1 & 650.00 \\
+12 & Prototyping Breadboards & 830-tie point / 400-tie point solderless breadboards with dual power rails & 2 & 260.00 \\
+13 & Screw Terminal Blocks & 2-pin / multi-terminal PCB screw breakout blocks for high-current 12V/6V rails & 3 & 60.00 \\
+14 & Regulation Snooker Balls & $52.5\,\text{mm}$ phenolic resin balls (Active: Orange set, White, Yellow, Green, Blue, Pink) & 1 Set & 1,650.00 \\
+15 & Wooden Electronics Stand & Elevated side support stand for control electronics, laptop, and gantry base & 1 & 750.00 \\
+16 & Connecting Hardware & Jumper wires, heat shrink tubing, zip ties, mounting nuts and bolts & 1 Set & 200.00 \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Total Prototype Expenditure (INR):}} & \textbf{21,800.00} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+The software stack comprises:
+\begin{itemize}
+    \item \textbf{Host Vision \& Scientific Computing:} Windows 11 / Ubuntu 22.04 LTS, Python 3.10, PyTorch 2.0.1 (CUDA), Ultralytics YOLOv8s, OpenCV 4.8.0, NumPy 1.24.3, and SciPy 1.10.1 (\texttt{RectBivariateSpline}, \texttt{linear\_sum\_assignment}).
+    \item \textbf{Embedded Firmware:} Arduino IDE / PlatformIO with Espressif ESP32 core (v2.0.11), \texttt{WebServer}, and \texttt{ESP32Servo} PWM hardware timer libraries.
+    \item \textbf{Backend \& Frontend Web Stack:} Flask 3.0 multi-threaded REST server, HTML5/CSS3/ES6+ JavaScript, and Three.js (r128) WebGL engine.
+\end{itemize}

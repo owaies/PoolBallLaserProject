@@ -1,0 +1,31 @@
+# YOLO Training Configuration
+
+model: "yolov8n.pt"  # Use YOLOv8 nano by default. Options: yolov8s.pt, yolov8m.pt, etc.
+epochs: 100
+batch_size: 16
+image_size: 640
+learning_rate: 0.01
+optimizer: "auto"    # Options: SGD, Adam, AdamW, auto
+patience: 50         # Early stopping patience
+weight_decay: 0.0005
+confidence_threshold: 0.25
+iou_threshold: 0.7
+number_of_workers: 4 # Reduce if memory/CPU is limited
+device: "auto"       # 'auto' automatically selects GPU if available, else CPU
+random_seed: 42
+resume: False        # Set to True or a path to last.pt to resume an interrupted run
+
+# Augmentation Settings
+augmentation:
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 0.0
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  perspective: 0.0
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.0

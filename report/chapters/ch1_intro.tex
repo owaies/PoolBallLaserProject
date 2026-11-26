@@ -1,0 +1,72 @@
+\chapter{INTRODUCTION}
+
+Cue sports represent a sophisticated domain that combines Newtonian physics, strategic foresight, and exceptional physical precision. Among billiards disciplines, snooker stands out as one of the most demanding and technically nuanced cue sports in the world. Governed internationally by the World Professional Billiards and Snooker Association (WPBSA), snooker is played on a rectangular baize table measuring $1168.4\,\text{mm} \times 2341.88\,\text{mm}$ in institutional setups (up to $1778\,\text{mm} \times 3569\,\text{mm}$ in championship venues) with six pockets around the perimeter \cite{ref27}. Twenty-two $52.5\,\text{mm}$ spherical balls---fifteen identical object balls, six distinct colored balls (Yellow: 2, Green: 3, Brown: 4, Blue: 5, Pink: 6, Black: 7), and one white cue ball---must be tracked continuously across sequential shots \cite{ref4, ref12}.
+
+\section{Problem Statement}
+One of the most contentious and time-consuming aspects of modern competitive snooker is the enforcement of WPBSA Official Rule 14 (\textit{``Foul and a Miss''}). When a striker fails to make legal first contact with an object ball ``on'' and the non-offending opponent requests a replay from the original pre-shot layout, the referee must restore all disturbed balls---both the cue ball and any displaced object balls---to their exact pre-shot coordinates.
+
+Current manual and broadcast-assisted restoration protocols suffer from five critical engineering and officiating problems:
+\begin{enumerate}
+    \item \textbf{P1. Oblique Camera Parallax Discrepancy:} In premier televised tournaments, off-table television operators overlay split-screen camera views from oblique angles, introducing real-world positioning discrepancies exceeding $10\,\text{mm}$ to $15\,\text{mm}$, where even a $2\,\text{mm}$ offset alters potting or snooker escape angles.
+    \item \textbf{P2. Prolonged Match Stoppages:} Negotiating manual ball replacement between the referee, striker, and opponent routinely halts play for several minutes per incident, disrupting match momentum.
+    \item \textbf{P3. Total Absence in Non-Televised Venues:} In amateur tournaments, university championships, and local snooker clubs, no broadcast infrastructure exists, forcing referees to restore multiple balls solely from subjective human visual memory.
+    \item \textbf{P4. Identity Ambiguity Among Identical Object Balls:} Unlike numbered pool balls, the fifteen red/orange object balls in snooker are visually indistinguishable, causing naive tracking algorithms to lose ball identity during multi-ball collisions.
+    \item \textbf{P5. Actuation and Projection Disconnect:} Existing computer vision prototypes stop at 2D bounding-box overlays on external monitors, lacking a non-invasive physical optical pointer capable of projecting millimeter-accurate restoration markers directly onto the green baize.
+\end{enumerate}
+
+\section{Project Description}
+This project presents the design, mathematical formulation, hardware fabrication, and software realization of an end-to-end \textbf{AI-Based Snooker Ball Identification and Laser Positioning System}. Departing from subjective human estimation and expensive industrial gantries, the platform integrates computer vision, projective geometry, embedded Internet-of-Things (IoT) actuation, and 3D web visualization into a unified cyber-physical officiating assistant.
+
+The system architecture comprises seven tightly integrated subsystems:
+\begin{enumerate}
+    \item \textbf{Overhead Structural Gantry and Controlled Table Rig:} A rigid PVC overhead gantry ($1315.15\,\text{mm}$ clearance) spanning an institutional $1168.4\,\text{mm} \times 2341.88\,\text{mm}$ snooker table, supporting a centralized 1080p overhead vision sensor.
+    \item \textbf{Deep Learning Ball Perception Engine (YOLOv8s):} An anchor-free single-stage YOLOv8s detector fine-tuned on a custom snooker dataset across active ball classes (White cue ball, Orange object balls, Yellow, Green, Blue, and Pink), achieving $94.6\%$ $\text{mAP}_{0.5}$.
+    \item \textbf{Planar Homography and Elevation Parallax Rectification:} A $3 \times 3$ projective homography matrix solved via Singular Value Decomposition (SVD) across four pocket fiducials, coupled with a closed-form radial elevation parallax correction for $52.5\,\text{mm}$ spherical ball centers ($Z_{\text{ball}} = 26.25\,\text{mm}$).
+    \item \textbf{Autonomous Referee Finite State Machine (FSM):} A temporal optical frame-differencing sensor that automatically locks pre-shot baselines, suppresses detection during active ball motion, confirms post-shot settlement after a $2.5\,\text{s}$ rest window, and isolates displaced balls via Hungarian bipartite Euclidean matching.
+    \item \textbf{2D Bivariate Cubic Spline Kinematic Calibration:} An empirical 9-point spatial spline surface interpolating Pan and Tilt servo angles across the table cloth to neutralize micro-servo potentiometer non-linearities, gear backlash, and gravity droop.
+    \item \textbf{ESP32 IoT Dual-Axis Laser Gimbal:} An Espressif ESP32 Dev Kit operating in dedicated Wi-Fi Station Mode (`10.21.46.190`), driving two high-torque TowerPro MG996R metal-gear servos on aluminum pan-tilt brackets powered by a regulated $6.0\,\text{V}$ DC-DC buck bus (from a $12\,\text{V}$ $5\,\text{A}$ SMPS), and switching a $650\,\text{nm}$ $5\,\text{mW}$ red laser diode via an IRFZ44N N-Channel MOSFET with a $10\,\text{k}\Omega$ pull-down gate resistor.
+    \item \textbf{Interactive Three.js 3D Digital Twin and Web Dashboard:} A Flask REST API backend and responsive 6-tab WebGL interface providing real-time 3D table synchronization, click-to-aim laser control, live $\pm 0.2^\circ / \pm 1.0^\circ$ servo nudge fine-tuning, and offline-resilient cached frame fallback.
+\end{enumerate}
+
+\section{Objectives}
+The primary technical objectives of the project are defined as follows:
+\begin{enumerate}
+    \item[\textbf{O1.}] \textbf{Ball Detection:} Train and deploy a YOLOv8s deep convolutional neural network on an overhead camera feed mounted on a $1315.15\,\text{mm}$ PVC gantry to detect and classify active snooker balls (White cue ball, Orange object balls, Yellow, Green, Blue, and Pink) in real time ($\text{mAP}_{0.5} > 92\%$), paired with SVD planar homography and spherical elevation parallax compensation for sub-ball metric localization ($\le 2.5\,\text{mm}$).
+    \item[\textbf{O2.}] \textbf{Ball Tracking:} Develop an autonomous temporal frame-differencing motion tracker and Hungarian bipartite spatial assignment engine that locks pre-shot coordinates, detects stroke execution and $2.5\,\text{s}$ settlement stability, and accurately distinguishes stationary, displaced, and pocketed balls across visually identical object balls.
+    \item[\textbf{O3.}] \textbf{Foul Restoration using Laser Pointing:} Engineer an ESP32-controlled dual-MG996R pan-tilt gimbal carrying a $650\,\text{nm}$ red laser diode, calibrated via a 9-point 2D bivariate cubic spline surface and integrated with a Three.js 3D digital twin UI to pinpoint exact pre-shot restoration coordinates ($\pm 3.0\,\text{mm}$) directly onto the table cloth following a foul call.
+\end{enumerate}
+
+\section{Scope}
+The operational scope and engineering boundaries of the system encompass:
+\begin{itemize}
+    \item \textbf{Physical Table and Sensor Geometry:} Deployment on an institutional snooker table ($1168.4\,\text{mm} \times 2341.88\,\text{mm}$) with six regulation drop pockets, baulk line, and 'D' zone, observed from an overhead gantry at $1315.15\,\text{mm}$.
+    \item \textbf{Active Ball Set Composition:} Detection and restoration across an active test set comprising high-visibility Orange object balls (substituted for dark red balls for contrast validation), White cue ball, and Yellow, Green, Blue, and Pink colored balls (with brown and black balls excluded during prototype trials).
+    \item \textbf{Single-Spot Optical Actuation:} Sequential laser restoration via a 2-DOF pan-tilt gimbal carrying a Class IIIa $650\,\text{nm}$ ($5\,\text{mW}$) red laser diode, rather than high-voltage industrial galvanometer scanners.
+    \item \textbf{Controlled Indoor Operation:} Validated under controlled indoor room illumination to ensure repeatable chromatic segmentation and minimal cast shadows.
+\end{itemize}
+
+\section{Purpose}
+The purpose of this work is to bridge the gap between theoretical computer vision research and practical sports officiating hardware:
+\begin{itemize}
+    \item \textbf{Integrity and Fairness in Cue Sports:} Eliminates human bias and subjective estimation during WPBSA Rule 14 foul-and-a-miss rulings, restoring game state with mathematical precision.
+    \item \textbf{Democratization of Refereeing Technology:} Delivers elite-level ball restoration assistance at a total prototype cost under INR 23,000, making automated officiating accessible to colleges, clubs, and amateur academies.
+    \item \textbf{Interdisciplinary Cyber-Physical Validation:} Demonstrates end-to-end integration of deep learning, projective geometry, numerical spline interpolation, embedded FreeRTOS firmware, power electronics, and 3D WebGL visualization.
+\end{itemize}
+
+\section{Relevance to Sustainable Development Goals (SDGs)}
+In alignment with the United Nations 2030 Agenda for Sustainable Development, the proposed system directly supports three key SDGs (detailed further in Appendix B):
+\begin{itemize}
+    \item \textbf{SDG 9 (Industry, Innovation, and Infrastructure):} Advances affordable, locally fabricated AI and IoT cyber-physical infrastructure by replacing costly proprietary broadcast hardware with open-source vision and off-the-shelf microcontrollers.
+    \item \textbf{SDG 4 (Quality Education):} Serves as a hands-on multidisciplinary engineering platform and precision sports coaching aid for university robotics laboratories and athletic training academies.
+    \item \textbf{SDG 12 (Responsible Consumption and Production):} Promotes modular, repairable hardware architecture using standard PVC conduits and reusable breadboard electronics.
+\end{itemize}
+
+\section{Organization of the Report}
+The remainder of this report is organized as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2 (Literature Review / Existing System):} Synthesizes 40 academic works across cue-sports computer vision, planar homography, visual servoing, and sports officiating, identifying key research gaps.
+    \item \textbf{Chapter 3 (Methodology):} Details functional and non-functional requirements, the four-tier system architecture, mathematical algorithms (homography, parallax, bivariate splines, Hungarian matching, FSM), and hardware/software tools.
+    \item \textbf{Chapter 4 (Implementation and Testing):} Describes the physical rig fabrication, embedded ESP32 and MOSFET driver circuit, YOLOv8s pipeline, Flask/Three.js software modules, and unit/integration testing.
+    \item \textbf{Chapter 5 (Results and Discussion):} Presents system output screenshots, architectural baseline comparisons, quantitative localization and laser precision benchmarks, latency profiling, and foul test cases.
+    \item \textbf{Chapter 6 (Conclusion and Future Enhancements):} Summarizes key engineering contributions, system limitations, and future directions including full 22-ball championship support and galvanometer scanning.
+\end{itemize}

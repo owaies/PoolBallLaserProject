@@ -1,0 +1,10 @@
+# Start the FastAPI backend
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+# Navigate into the frontend folder
+cd frontend
+
+# Install dependencies if you haven't already
+npm install
+
+# Start the Vite development server
+npm run dev

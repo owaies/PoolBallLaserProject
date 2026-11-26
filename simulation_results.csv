@@ -1,0 +1,6 @@
+id,timestamp,target_x_mm,target_y_mm,commanded_pan_deg,commanded_tilt_deg,measured_x_mm,measured_y_mm,error_x_mm,error_y_mm,euclidean_error_mm,notes,image_file
+b2b71683,2026-11-01 19:12:39,1170.94,584.2,125.0,84.0,1173.61,584.29,2.67,0.09,2.67,Simulated test: Table Center,
+09b4e86c,2026-11-01 19:12:39,585.0,584.2,139.5,77.0,586.19,587.05,1.19,2.85,3.09,Simulated test: Break Area (Head),
+7f8725fd,2026-11-01 19:12:39,1756.0,584.2,120.0,89.0,1754.47,587.5,-1.53,3.3,3.64,Simulated test: Rack Spot (Foot),
+0421e385,2026-11-01 19:12:39,100.0,100.0,131.4,64.2,103.13,98.09,3.13,-1.91,3.67,Simulated test: Top-Left Pocket Vicinity,
+90c8bf1d,2026-11-01 19:12:39,2200.0,1050.0,124.7,93.1,2198.0,1048.41,-2.0,-1.59,2.55,Simulated test: Bottom-Right Pocket Vicinity,

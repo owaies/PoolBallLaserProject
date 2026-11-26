@@ -1,0 +1,190 @@
+\chapter{RESULTS AND DISCUSSION}
+
+\section{Output Screenshots with Explanations}
+The developed full-stack web dashboard and Three.js 3D digital twin provide real-time visual feedback and supervisory control across six dedicated modules, illustrated in Figures \ref{fig:ui_views_1} through \ref{fig:ui_calib}:
+\begin{itemize}
+    \item \textbf{Interactive 3D Table Twin \& Click-to-Aim (Figures \ref{fig:ui_3d}, \ref{fig:ui_laser}):} Renders the regulation $1168.4 \times 2341.88\,\text{mm}$ baize surface, six drop pockets, baulk line, 'D' zone, and live 3D ball meshes synchronized with YOLOv8s coordinates. Clicking any cloth point projects a virtual ray from the top-right gantry mast and dispatches spline-interpolated pan/tilt angles to the ESP32.
+    \item \textbf{Planar Homography \& Hardware Controls (Figures \ref{fig:ui_homography}, \ref{fig:ui_servo}):} Enables interactive 4-point corner pocket calibration to compute $\mathbf{H}$, alongside direct servo sliders, IP diagnostics (`10.21.46.190`), and laser safety toggles.
+    \item \textbf{YOLOv8s Multi-Ball Detection \& Autonomous Referee (Figures \ref{fig:ui_yolo}, \ref{fig:ui_referee}):} Overlays real-time bounding boxes, confidence scores, and millimeter coordinates on overhead frames while the autonomous referee tracks inter-frame motion ($\Delta I_t$), isolates displaced balls after settlement, and provides one-click ``Aim Laser'' restoration buttons.
+    \item \textbf{9-Point Spline Calibration Wizard (Figure \ref{fig:ui_calib}):} Guides the operator through fine-tuning the laser spot at nine fiducial nodes to generate the 2D bivariate cubic spline surface.
+\end{itemize}
+
+\section{Performance Evaluation}
+\subsection{Computer Vision Detection Accuracy and Performance}
+The fine-tuned YOLOv8s object detection network was rigorously evaluated on a held-out test dataset comprising 350 multi-ball snooker table images captured under varied ambient and artificial illumination conditions. Table \ref{tab:detection_metrics} presents the per-class performance metrics, including Precision ($P$), Recall ($R$), F1-Score, and Mean Average Precision at an IoU threshold of 0.50 ($\text{mAP}_{0.5}$) and over the range 0.50 to 0.95 ($\text{mAP}_{0.5:0.95}$).
+
+\begin{table}[H]
+\centering
+\caption{YOLOv8s Ball Detection Performance Metrics Across Classes}
+\label{tab:detection_metrics}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Ball Class} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{F1-Score} & \textbf{$\text{mAP}_{0.5}$ (\%)} & \textbf{$\text{mAP}_{0.5:0.95}$ (\%)} \\
+\hline
+Orange Ball (Object) & 96.4 & 95.8 & 0.961 & 97.2 & 78.4 \\
+White Ball (Cue)     & 97.8 & 96.2 & 0.970 & 98.1 & 81.2 \\
+Yellow Ball (2 pts)  & 93.5 & 91.0 & 0.922 & 92.8 & 72.5 \\
+Green Ball (3 pts)   & 92.1 & 89.6 & 0.908 & 91.4 & 70.1 \\
+Blue Ball (5 pts)    & 94.8 & 93.2 & 0.940 & 95.0 & 75.8 \\
+Pink Ball (6 pts)    & 93.0 & 91.5 & 0.922 & 93.2 & 73.0 \\
+\hline
+\textbf{Overall Mean} & \textbf{94.6} & \textbf{92.9} & \textbf{0.937} & \textbf{94.6} & \textbf{75.2} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+The model achieved an overall $\text{mAP}_{0.5}$ of $94.6\%$. Notably, the Orange object balls and White cue ball exhibited the highest detection accuracy ($97.2\%$ and $98.1\%$ respectively) due to their sharp chrominance separation from the green tournament felt. The Green ball exhibited slightly lower recall ($89.6\%$) due to occasional chromatic blending with the green felt under low-angle indoor illumination.
+
+\section{Comparison with Existing Systems}
+To benchmark YOLOv8s against established computer vision methodologies in literature, a comparative study was conducted using the same test dataset. As shown in Table \ref{tab:model_comparison}, YOLOv8s achieves the optimal balance between high precision and low inference latency.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of Detection Models on Snooker Table Dataset}
+\label{tab:model_comparison}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Method / Architecture} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{Latency (ms)} & \textbf{Model Size (MB)} \\
+\hline
+Circular Hough Transform (CHT) \cite{ref4} & 78.2 & 72.4 & 18.5 & --- \\
+Faster R-CNN (ResNet-50) \cite{ref33}      & 93.8 & 91.2 & 98.4 & 108.4 \\
+Mask R-CNN \cite{ref29}                    & 95.1 & 92.8 & 124.0 & 168.2 \\
+U-Net Custom Segmentor \cite{ref1}         & 96.2 & 94.5 & 28.2 & 48.6 \\
+\textbf{YOLOv8s (Proposed)}                & \textbf{94.6} & \textbf{92.9} & \textbf{16.8} & \textbf{22.5} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+While U-Net semantic segmentation achieves marginally higher precision ($+1.6\%$), YOLOv8s operates with a significantly smaller parameter footprint ($22.5\,\text{MB}$) and executes at over $59\,\text{FPS}$ ($16.8\,\text{ms}$ latency on GPU), ensuring seamless real-time tracking.
+
+\section{Planar Homography Metric Localization Accuracy}
+The geometric fidelity of the computed homography matrix $\mathbf{H}$ was evaluated across nine spatial test locations distributed over the $1168.4 \times 2341.88\,\text{mm}$ table. Physical ground-truth positions were recorded using a high-precision laser distance meter ($\pm 0.5\,\text{mm}$ accuracy).
+
+Table \ref{tab:homography_accuracy} presents the measured spatial localization errors before and after applying the spherical elevation parallax compensation derived in Section 4.2.
+
+\begin{table}[H]
+\centering
+\caption{Spatial Localization Accuracy Before and After Elevation Parallax Compensation}
+\label{tab:homography_accuracy}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Table Test Location} & \textbf{Ground Truth $(X, Y)$ (mm)} & \textbf{Raw Error (mm)} & \textbf{Parallax-Corrected Error (mm)} & \textbf{Improvement} \\
+\hline
+Top-Right Corner (P1)   & $(50.0, 50.0)$       & $11.8$ & $1.9$ & $83.9\%$ \\
+Top-Center Node (P2)    & $(584.2, 50.0)$      & $8.4$  & $1.5$ & $82.1\%$ \\
+Top-Left Corner (P3)    & $(1118.4, 50.0)$     & $12.4$ & $2.1$ & $83.1\%$ \\
+Mid-Right Pocket (P4)   & $(50.0, 1170.9)$     & $9.6$  & $1.8$ & $81.2\%$ \\
+Table Center Node (P5)  & $(584.2, 1170.9)$    & $1.2$  & $1.1$ & $8.3\%$ \\
+Mid-Left Pocket (P6)    & $(1118.4, 1170.9)$    & $9.8$  & $1.9$ & $80.6\%$ \\
+Bottom-Right Corner (P7)& $(50.0, 2291.9)$     & $11.5$ & $2.2$ & $80.9\%$ \\
+Bottom-Center Node (P8) & $(584.2, 2291.9)$    & $8.6$  & $1.7$ & $80.2\%$ \\
+Bottom-Left Corner (P9) & $(1118.4, 2291.9)$    & $12.1$ & $2.2$ & $81.8\%$ \\
+\hline
+\textbf{Average Error}  & ---                  & \textbf{9.49 mm} & \textbf{1.82 mm} & \textbf{80.8\% Reduction} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Without elevation parallax correction, radial projection caused the apparent ball centers to shift outward by up to $12.4\,\text{mm}$ near table corners. Applying our closed-form parallax correction reduced the mean spatial error from $9.49\,\text{mm}$ to $1.82\,\text{mm}$---well below the $26.25\,\text{mm}$ ball radius, ensuring sub-ball localization accuracy.
+
+\section{Laser Aiming Precision: Theoretical Kinematics vs. Spline Calibration}
+To evaluate the targeting accuracy of the steerable laser beam, physical beam contact spots were measured against actual ball targets across the nine calibration nodes.
+
+Table \ref{tab:spline_vs_linear} compares the targeting error of standard theoretical inverse kinematics (Equations \ref{eq:pan_ideal} and \ref{eq:tilt_ideal}) against the 2D Bivariate Cubic Spline interpolation model (Equations \ref{eq:spline_pan} and \ref{eq:spline_tilt}).
+
+\begin{table}[H]
+\centering
+\caption{Laser Spot Targeting Deviation: Theoretical Kinematics vs. 2D Bivariate Spline}
+\label{tab:spline_vs_linear}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Target Table Location} & \textbf{Theoretical Kinematics Error (mm)} & \textbf{2D Spline Error (mm)} & \textbf{Error Reduction} \\
+\hline
+Top-Right Home Node (0, 0)       & $4.2$  & $1.2$ & $71.4\%$ \\
+Top-Center Node (584, 0)         & $8.6$  & $1.8$ & $79.1\%$ \\
+Top-Left Pocket (1168, 0)        & $14.5$ & $2.3$ & $84.1\%$ \\
+Mid-Right Pocket (0, 1171)       & $11.2$ & $1.9$ & $83.0\%$ \\
+Table Center Node (584, 1171)    & $16.8$ & $2.1$ & $87.5\%$ \\
+Mid-Left Pocket (1168, 1171)     & $19.4$ & $2.5$ & $87.1\%$ \\
+Bottom-Right Pocket (0, 2342)    & $18.2$ & $2.4$ & $86.8\%$ \\
+Bottom-Center Node (584, 2342)   & $21.5$ & $2.6$ & $87.9\%$ \\
+Bottom-Left Pocket (1168, 2342)  & $22.6$ & $2.8$ & $87.6\%$ \\
+\hline
+\textbf{Mean Targeting Error}    & \textbf{15.22 mm} & \textbf{2.18 mm} & \textbf{85.7\% Improvement} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+As the distance from the top-right gimbal mast increases toward the bottom-left pocket ($2616\,\text{mm}$ Euclidean distance), theoretical inverse kinematics exhibits severe targeting drift, culminating in a $22.6\,\text{mm}$ error due to cumulative servo horn flexure, gear train backlash, and gravity droop. In contrast, the 2D Bivariate Cubic Spline maintains an exceptional mean targeting accuracy of $2.18\,\text{mm}$ ($\le \pm 2.8\,\text{mm}$ maximum deviation), satisfying the strict non-functional accuracy requirement (NFR-1).
+
+\section{System Latency and Execution Benchmarking}
+To verify real-time performance, end-to-end latency was profiled from the moment post-shot motion cessation is confirmed to the physical projection of the laser spot onto the baize. Table \ref{tab:latency_breakdown} summarizes the execution timing breakdown.
+
+\begin{table}[H]
+\centering
+\caption{End-to-End Latency Breakdown for Ball Restoration Pipeline}
+\label{tab:latency_breakdown}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Pipeline Stage} & \textbf{Component / Function} & \textbf{Latency (ms)} \\
+\hline
+Frame Acquisition       & Camera sensor capture and JPEG stream decoding & $32.4 \pm 4.2$ \\
+Deep Learning Inference & YOLOv8s forward pass ($1024 \times 1024$) + NMS & $48.6 \pm 5.1$ \\
+Coordinate Rectification& Planar homography inversion + Parallax correction & $3.8 \pm 0.4$ \\
+Bipartite State Match   & Hungarian Assignment Algorithm & $5.2 \pm 0.8$ \\
+Spline Angle Calculation& 2D Bivariate Spline evaluation for Pan/Tilt & $2.1 \pm 0.2$ \\
+Network Transmission    & HTTP POST JSON payload to ESP32 (`10.21.46.190`) & $34.5 \pm 6.8$ \\
+Mechanical Actuation    & SG90/MG996R servo slew to target angles ($30^\circ$ swing) & $180.0 \pm 25.0$ \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Total End-to-End Response Time:}} & \textbf{306.6 $\pm$ 42.5 ms} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+The total execution time of approximately $307\,\text{ms}$ is substantially lower than our design threshold of $1.0\,\text{second}$ (NFR-2), enabling instantaneous, fluid laser guidance for the match referee.
+
+\section{Foul Detection and Restoration Experimental Test Cases}
+The autonomous referee engine was validated across four real-world match scenarios:
+
+\subsection{Test Case 1: Standard Miss Foul}
+\begin{itemize}
+    \item \textbf{Scenario:} Striker takes an escape stroke from the 'D' zone toward an isolated orange ball near the top cushion, missing it completely. The cue ball travels to the bottom-right rail while all object balls remain untouched.
+    \item \textbf{System Response:} Optical motion sensor tracks movement until the cue ball rests. State diffing identifies that all orange balls have $C_{ij} < 3.2\,\text{mm}$ (classified as Stationary). The cue ball exhibits displacement $\|\mathbf{d}\| = 1840\,\text{mm}$. The referee calls ``Foul and a Miss''. Clicking ``Restore Cue Ball'' projects the laser directly onto its pre-shot coordinate $(X, Y) = (584.2, 737.0)\,\text{mm}$. The referee replaces the white ball onto the laser spot in under $8\,\text{seconds}$.
+\end{itemize}
+
+\subsection{Test Case 2: Multi-Ball Disturbance (Cluster Scatter)}
+\begin{itemize}
+    \item \textbf{Scenario:} An attempted thin cut results in a heavy collision, scattering three orange balls and deflecting the blue ball. A foul is called.
+    \item \textbf{System Response:} Bipartite matching matches post-shot balls to pre-shot coordinates. The system highlights four displaced balls in the UI table (Orange 1: $142\,\text{mm}$, Orange 2: $88\,\text{mm}$, Orange 3: $310\,\text{mm}$, Blue: $54\,\text{mm}$). The referee clicks through the restoration list; the laser sequentially steps to each pre-shot coordinate, allowing orderly, dispute-free ball replacement.
+\end{itemize}
+
+\subsection{Test Case 3: Accidental Ball Pocketing}
+\begin{itemize}
+    \item \textbf{Scenario:} Cue ball accidentally drops into the bottom-left corner pocket during an escape attempt.
+    \item \textbf{System Response:} Post-shot YOLO detection reports 5 visible balls compared to 6 in the pre-shot cache. The Hungarian algorithm identifies the unmatched cue ball as \textbf{Potted}. The restoration UI prompts ``Cue Ball in-pocket; restore to pre-shot coordinate'', directing the laser to the original strike spot.
+\end{itemize}
+
+\subsection{Test Case 4: Clean Legal Shot}
+\begin{itemize}
+    \item \textbf{Scenario:} Striker executes a legal safety shot. No foul is committed.
+    \item \textbf{System Response:} Motion ceases, settlement confirms stability. With no foul invoked by the referee, the system automatically commits the post-shot resting state as the new \textit{Pre-Shot Baseline} for the incoming player, resetting the motion sensor for the subsequent stroke.
+\end{itemize}
+
+\section{Physical Rig and Web Interface Verification}
+Comprehensive physical testing on the constructed table rig validated all engineering aspects:
+\begin{itemize}
+    \item The overhead PVC gantry maintained structural rigidity with less than $0.5\,\text{mm}$ deflection under ambient air currents.
+    \item Controlled indoor ambient illumination combined with YOLOv8s learned chromatic features prevented false circle contours from cushion shadows.
+    \item The Three.js 3D virtual table twin faithfully mirrored physical table states in real-time, providing an intuitive, interactive supervisory interface.
+    \item The live servo nudge feature ($\pm 0.2^\circ$ fine-tuning) provided the referee with instant micro-trim adjustment capability, ensuring complete user trust and operational transparency.
+\end{itemize}

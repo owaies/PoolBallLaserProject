@@ -1,0 +1,7 @@
+path: D:/Final Year Project/AIPOOLBALLLASERPROJECT/datasets/snooker
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 8
+names: ['black-ball', 'blue-ball', 'brown-ball', 'green-ball', 'pink-ball', 'red-ball', 'white-ball', 'yellow-ball']

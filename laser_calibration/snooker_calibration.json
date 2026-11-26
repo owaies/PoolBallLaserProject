@@ -1,0 +1,96 @@
+{
+  "version": "2.0.0",
+  "system": "AI-Based Snooker Ball Identification and Laser Positioning System",
+  "table_dimensions": {
+    "width_mm": 1168.4,
+    "length_mm": 2341.88,
+    "origin": "Top-Right inner felt corner"
+  },
+  "overhead_mount": {
+    "tilt_pivot_height_above_felt_mm": 1315.15,
+    "pan_plumb_projection": "Top-Right pocket (0,0)"
+  },
+  "nodes": [
+    {
+      "id": "node_tr",
+      "label": "Top-right (TR)",
+      "x_mm": 0.0,
+      "y_mm": 0.0,
+      "pan_deg": 10.0,
+      "tilt_deg": 150.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_tc",
+      "label": "Top-centre (TC)",
+      "x_mm": 584.2,
+      "y_mm": 0.0,
+      "pan_deg": 105.0,
+      "tilt_deg": 126.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_tl",
+      "label": "Top-left (TL)",
+      "x_mm": 1168.4,
+      "y_mm": 0.0,
+      "pan_deg": 108.0,
+      "tilt_deg": 107.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_mr",
+      "label": "Middle-right (MR)",
+      "x_mm": 0.0,
+      "y_mm": 1170.94,
+      "pan_deg": 11.0,
+      "tilt_deg": 104.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_c",
+      "label": "Centre (C)",
+      "x_mm": 584.2,
+      "y_mm": 1170.94,
+      "pan_deg": 40.1,
+      "tilt_deg": 104.0,
+      "status": "calibrated"
+    },
+    {
+      "id": "node_ml",
+      "label": "Middle-left (ML)",
+      "x_mm": 1168.4,
+      "y_mm": 1170.94,
+      "pan_deg": 56.0,
+      "tilt_deg": 95.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_br",
+      "label": "Bottom-right (BR)",
+      "x_mm": 0.0,
+      "y_mm": 2341.88,
+      "pan_deg": 11.0,
+      "tilt_deg": 81.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_bc",
+      "label": "Bottom-centre (BC)",
+      "x_mm": 584.2,
+      "y_mm": 2341.88,
+      "pan_deg": 25.0,
+      "tilt_deg": 81.0,
+      "status": "verified"
+    },
+    {
+      "id": "node_bl",
+      "label": "Bottom-left (BL)",
+      "x_mm": 1168.4,
+      "y_mm": 2341.88,
+      "pan_deg": 35.0,
+      "tilt_deg": 81.0,
+      "status": "verified"
+    }
+  ]
+}

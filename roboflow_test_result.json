@@ -1,0 +1,36 @@
+{
+  "inference_id": "f3e9cbbe-6c0e-46d3-ba20-0c2b958c8061",
+  "time": 0.11540905991569161,
+  "resolved_model": {
+    "model_id": "snooker-ball-detection-rnhxo/3",
+    "model_package_id": "341349e9c9f96e1bbe9f80d3dd33e463",
+    "backend": "onnx",
+    "quantization": "fp32"
+  },
+  "image": {
+    "width": 1842,
+    "height": 4096
+  },
+  "predictions": [
+    {
+      "x": 720.5,
+      "y": 1003.5,
+      "width": 45.0,
+      "height": 105.0,
+      "confidence": 0.7887516617774963,
+      "class": "blue-ball",
+      "class_id": 1,
+      "detection_id": "edf2f943-862a-4350-83b8-000ae0869c1e"
+    },
+    {
+      "x": 535.5,
+      "y": 1691.5,
+      "width": 45.0,
+      "height": 137.0,
+      "confidence": 0.599770188331604,
+      "class": "blue-ball",
+      "class_id": 1,
+      "detection_id": "520740c7-4a4a-4a98-ba85-df38141f2320"
+    }
+  ]
+}
