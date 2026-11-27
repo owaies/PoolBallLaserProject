@@ -46,6 +46,11 @@ backend/
    ```bash
    pip install -r requirements.txt
    ```
+
+   For the optional Roboflow-hosted inference integration, install its additional dependencies:
+   ```bash
+   pip install -r requirements-roboflow.txt
+   ```
 4. Copy the environment file template and configure it:
    ```bash
    copy .env.example .env
