@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - "backend/app/services/roboflow_service.py"
+      - "backend/app/core/config.py"
+      - "backend/tests/test_settings_security.py"
       - "backend/tests/test_roboflow_service.py"
       - ".github/workflows/roboflow-service-tests.yml"
   pull_request:
@@ -31,7 +33,7 @@ jobs:
       - name: Install focused test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest numpy opencv-python-headless Pillow python-dotenv
+          python -m pip install pytest numpy opencv-python-headless Pillow python-dotenv pydantic-settings
 
       - name: Run Roboflow service tests
-        run: python -m pytest backend/tests/test_roboflow_service.py -q
+        run: python -m pytest backend/tests/test_roboflow_service.py backend/tests/test_settings_security.py -q
