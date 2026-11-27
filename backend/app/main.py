@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 from datetime import datetime
@@ -8,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.services.yolo_service import yolo_service
 from backend.app.api import health, model, detect, mapping, statistics, logs, games, snooker
-
 
 
 # 1. Setup Loggers
@@ -44,9 +44,17 @@ uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/api/static/uploads", StaticFiles(directory=uploads_dir), name="static_uploads")
 
 # 4. CORS Middleware
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict this to specific origins in production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,9 +77,9 @@ async def shutdown_event():
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     logger.info(f"Incoming Request: {request.method} {request.url.path}")
-    
+
     response = await call_next(request)
-    
+
     duration = time.time() - start_time
     logger.info(f"Response: Status {response.status_code} | Duration {duration:.4f}s")
     return response
@@ -85,7 +93,6 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "status": "error",
             "message": "An unexpected error occurred on the server.",
-            "details": str(exc),
             "timestamp": datetime.utcnow().isoformat()
         }
     )
