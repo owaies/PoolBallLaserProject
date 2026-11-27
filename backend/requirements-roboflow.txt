@@ -1,0 +1,4 @@
+# Optional dependencies for the Roboflow-hosted inference integration.
+-r requirements.txt
+inference-sdk>=0.9.0
+python-dotenv>=1.0.0
