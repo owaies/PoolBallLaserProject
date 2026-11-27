@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from pathlib import Path
 from typing import Optional
@@ -28,8 +29,8 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Admin Authentication
-    ADMIN_PASSWORD: str = "admin123"
-    ADMIN_JWT_SECRET: str = "pool-laser-admin-secret-key-change-in-production"
+    ADMIN_PASSWORD: str | None = Field(default=None, repr=False)
+    ADMIN_JWT_SECRET: str | None = Field(default=None, repr=False)
     ADMIN_JWT_EXPIRE_HOURS: int = 24
 
     # Path constants
