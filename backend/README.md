@@ -61,6 +61,7 @@ backend/
 - Keep `backend/.env` local. Environment files are ignored by Git; commit only the example template.
 - Set `ROBOFLOW_API_KEY` in your local environment only when using the optional Roboflow inference integration. The service does not contain a built-in API key fallback.
 - Set `CORS_ORIGINS` to a comma-separated list of exact browser origins, including the deployed frontend origin. The default list is for local development.
+- Admin password and JWT signing-key settings are unset by default. If admin authentication is added or enabled, provide strong values through environment variables; do not add credentials to source files.
 - If a Roboflow key was previously committed, revoke it in the Roboflow dashboard and create a replacement. Removing a file from the current branch does not erase it from earlier Git history.
 
 ---
