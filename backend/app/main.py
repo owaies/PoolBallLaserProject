@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 from datetime import datetime
@@ -46,10 +45,7 @@ app.mount("/api/static/uploads", StaticFiles(directory=uploads_dir), name="stati
 # 4. CORS Middleware
 allowed_origins = [
     origin.strip()
-    for origin in os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:3000,http://127.0.0.1:3000"
-    ).split(",")
+    for origin in settings.CORS_ORIGINS.split(",")
     if origin.strip()
 ]
 app.add_middleware(
