@@ -11,6 +11,8 @@ on:
   pull_request:
     paths:
       - "backend/app/services/roboflow_service.py"
+      - "backend/app/core/config.py"
+      - "backend/tests/test_settings_security.py"
       - "backend/tests/test_roboflow_service.py"
       - ".github/workflows/roboflow-service-tests.yml"
 
