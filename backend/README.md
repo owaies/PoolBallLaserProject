@@ -20,7 +20,7 @@ backend/
 │   └── main.py          # FastAPI application entry point
 ├── logs/                # API log files (backend.log)
 ├── tests/               # Pytest unit tests (test_main.py)
-├── .env                 # Local environment configuration file
+├── .env                 # Local environment configuration file (not committed)
 ├── .env.example         # Template for environment configuration
 ├── requirements.txt     # Python backend dependencies
 └── README.md
@@ -38,7 +38,7 @@ backend/
    ```bash
    python -m venv venv
    # On Windows (PowerShell)
-   .\venv\Scripts\Activate.ps1
+   .\\venv\\Scripts\\Activate.ps1
    # On macOS/Linux
    source venv/bin/activate
    ```
@@ -50,6 +50,13 @@ backend/
    ```bash
    copy .env.example .env
    ```
+
+### Environment and credentials
+
+- Keep `backend/.env` local. Environment files are ignored by Git; commit only the example template.
+- Set `ROBOFLOW_API_KEY` in your local environment only when using the optional Roboflow inference integration. The service does not contain a built-in API key fallback.
+- Set `CORS_ORIGINS` to a comma-separated list of exact browser origins, including the deployed frontend origin. The default list is for local development.
+- If a Roboflow key was previously committed, revoke it in the Roboflow dashboard and create a replacement. Removing a file from the current branch does not erase it from earlier Git history.
 
 ---
 
