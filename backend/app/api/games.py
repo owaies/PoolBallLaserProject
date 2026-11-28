@@ -95,11 +95,12 @@ async def upload_model(
             temp_model = YOLO(str(temp_path))
             _ = temp_model.names
         except Exception as e:
+            logger.warning("Uploaded model failed YOLO validation: %s", e, exc_info=True)
             if temp_path.exists():
                 temp_path.unlink()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Uploaded file is not a valid YOLO model: {str(e)}"
+                detail="Uploaded file is not a valid YOLO model."
             )
 
         # Move to target path
@@ -125,5 +126,5 @@ async def upload_model(
         logger.error(f"Failed to upload model: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal error processing model upload: {str(e)}"
+            detail="Model upload failed due to an internal server error."
         )

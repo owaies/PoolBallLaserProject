@@ -74,7 +74,7 @@ async def detect_snooker_photo(
         logger.error(f"Snooker detection failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Snooker YOLO inference error: {str(e)}"
+            detail="Snooker detection failed. Please try again later."
         )
 
 @router.post("/compare-states")
@@ -100,5 +100,5 @@ def compare_table_states(payload: TableComparePayload):
         logger.error(f"Table state comparison failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing table state comparison: {str(e)}"
+            detail="Table state comparison failed. Please try again later."
         )

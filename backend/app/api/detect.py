@@ -83,7 +83,7 @@ async def detect_image(
         logger.error(f"Inference error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"YOLO inference error: {str(e)}"
+            detail="Image detection failed. Please try again later."
         )
 
 @router.post("/detect/folder", response_model=FolderDetectionResponse)
@@ -99,13 +99,14 @@ def detect_folder(folder_path: str = Body(..., embed=True)):
         results = yolo_service.predict_folder(folder_path)
         return results
     except FileNotFoundError as e:
+        logger.warning("Requested detection folder was not found: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="Requested folder was not found or is not accessible."
         )
     except Exception as e:
         logger.error(f"Folder detection failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing folder detection: {str(e)}"
+            detail="Folder detection failed. Please try again later."
         )
