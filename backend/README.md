@@ -139,6 +139,18 @@ Once running:
 
 ---
 
+## API error responses
+
+Inference, folder-processing, Snooker comparison, and model-upload failures return stable client-facing messages. Internal exception text and server filesystem paths are written to backend logs rather than included in API responses. A missing or inaccessible detection folder returns a generic not-found message, and an invalid YOLO model upload returns a validation message without exposing loader internals.
+
+The regression cases for these responses are in `tests/test_api_error_sanitization.py`. Run them with:
+
+```bash
+pytest tests/test_api_error_sanitization.py
+```
+
+---
+
 ## Running Unit Tests
 
 To execute the Pytest unit testing suite:
